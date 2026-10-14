@@ -19,8 +19,8 @@ SDK = ROOT / "bk_avdk_smp"
 LANGUAGES = ("zh-CN", "en-US")
 MARKER = "mybot-bk7258-build-all-v1\n"
 ENDPOINTS = {
-    "zh-CN": b"https://mybot.sh2.agoralab.co/api",
-    "en-US": b"https://mybot.sg3.agoralab.co/api",
+    "zh-CN": b"https://botstation.shengwang.cn/api",
+    "en-US": b"https://botstation.agora.io/api",
 }
 
 

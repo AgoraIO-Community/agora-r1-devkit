@@ -168,6 +168,14 @@ mybot Kconfig 当前提供：
 
 语言选项会同时决定服务区域与提示音目录，两个语言选项必须且只能启用一个。
 
+| 固件语言 | 设备服务区域 | 设备服务地址 | TLS 根证书 |
+| --- | --- | --- | --- |
+| `zh-CN` | 国内 | `https://botstation.shengwang.cn/api` | DigiCert Global Root G2 |
+| `en-US` | 海外 | `https://botstation.agora.io/api` | Go Daddy Root Certificate Authority - G2 |
+
+服务地址按上游 SDK 的约定包含 `/api`，末尾不带 `/`。
+每个语言版本只编入对应服务区域的一个根证书。
+
 ## 内嵌语音资源
 
 提示音位于 `bk_solution_ai/projects/mybot/assets/locales/`，格式为 16 kHz 单声道

@@ -181,6 +181,14 @@ The mybot Kconfig currently provides:
 The language option selects both the service region and the prompt asset directory. Exactly one of
 the two language options must be enabled.
 
+| Firmware language | Device-service region | Device-service base URL | TLS root certificate |
+| --- | --- | --- | --- |
+| `zh-CN` | Mainland China | `https://botstation.shengwang.cn/api` | DigiCert Global Root G2 |
+| `en-US` | Overseas | `https://botstation.agora.io/api` | Go Daddy Root Certificate Authority - G2 |
+
+The base URL includes `/api` without a trailing slash, as specified by the upstream SDK.
+Each firmware compiles only the root certificate for its region.
+
 ## Embedded voice assets
 
 Prompt assets are stored under `bk_solution_ai/projects/mybot/assets/locales/` as 16 kHz mono

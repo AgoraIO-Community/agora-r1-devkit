@@ -1,4 +1,5 @@
 import os
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,6 +9,22 @@ import build_all
 
 
 class BuildAllTests(unittest.TestCase):
+    def test_regional_endpoints_match_sdk_addresses_and_platform_config(self):
+        expected = {
+            "zh-CN": b"https://botstation.shengwang.cn/api",
+            "en-US": b"https://botstation.agora.io/api",
+        }
+        self.assertEqual(build_all.ENDPOINTS, expected)
+        header = (build_all.COMPONENTS / "mybot/platforms/bk725x/modules/controller/"
+                  "mybot_language.h").read_text(encoding="utf-8")
+        branches = re.findall(
+            r"(?:#ifdef|#elif defined\()\s*(CONFIG_MYBOT_LANGUAGE_\w+)\)?\s*"
+            r"\n#define MYBOT_SERVER_BASE \"([^\"]+)\"", header)
+        self.assertEqual(dict(branches), {
+            "CONFIG_MYBOT_LANGUAGE_ZH_CN": expected["zh-CN"].decode("ascii"),
+            "CONFIG_MYBOT_LANGUAGE_EN_US": expected["en-US"].decode("ascii"),
+        })
+
     def test_bk7258_language_selection_and_firmware_checks(self):
         lines, found, options = build_all.source_config()
         english = build_all.variant_config(lines, found, options, "en-US")
