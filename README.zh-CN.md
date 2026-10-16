@@ -1,26 +1,28 @@
-# mybot-bk7258
+# agora-r1-devkit
 
-[![License](https://img.shields.io/github/license/junlon2006/mybot-bk7258)](LICENSE)
-[![Upstream](https://img.shields.io/badge/upstream-mybot-0969da)](https://github.com/junlon2006/mybot)
+[![License](https://img.shields.io/github/license/AgoraIO-Community/agora-r1-devkit)](LICENSE)
+[![Upstream](https://img.shields.io/badge/upstream-agent--studio--device--firmware-0969da)](https://github.com/AgoraIO-Community/agent-studio-device-firmware)
 [![Platform](https://img.shields.io/badge/platform-BK7258-2f6f4e)](https://github.com/bekencorp/bk_avdk_smp)
 
 **简体中文 | [English](README.md)**
 
-**mybot-bk7258** 是开源 AI 语音对话 SDK
-[mybot](https://github.com/junlon2006/mybot) 面向 BK7258 SMP 平台的参考实现。
+**agora-r1-devkit** 是开源 AI 语音对话 SDK
+[agent-studio-device-firmware](https://github.com/AgoraIO-Community/agent-studio-device-firmware)
+面向 BK7258 SMP 平台的参考实现。
 本仓库将 BK7258 SMP SDK、AI 解决方案、BK725x 平台适配和可直接构建的双核固件工程
 以 Git submodule 方式组织并固定到经过验证的版本，用于复现构建、平台开发和社区协作。
 
 > 本项目当前定位为 BK7258 参考实现，仍在持续开发中。用于量产产品前，请结合实际硬件
 > 完成板级适配、安全审查、稳定性验证，并确认所有第三方组件的许可与商业使用条件。
 
-## 与上游 mybot 的关系
+## 与 agent-studio-device-firmware 的关系
 
-[mybot](https://github.com/junlon2006/mybot) 是面向边缘设备的跨平台 AI 语音对话 SDK。
+[agent-studio-device-firmware](https://github.com/AgoraIO-Community/agent-studio-device-firmware)
+是面向边缘设备的跨平台 AI 语音对话 SDK。
 其核心采用 C99 编写，依赖 AOSL 提供可移植运行时，并通过平台 `ops` 接口获取 Wi-Fi、
 持久化存储、按键、显示、音频和网络传输等设备能力。
 
-本仓库不重新定义 mybot SDK，而是提供 BK7258 平台所需的完整实现：
+本仓库不重新定义上游 SDK，而是提供 BK7258 平台所需的完整实现：
 
 - BK7258 AP/CP 双核启动、内存和 Flash 分区配置。
 - BK725x Wi-Fi APSTA 配网、网络重连和凭据持久化。
@@ -31,7 +33,7 @@
 - 完整烧录固件以及同时包含 CP、AP 的 OTA 升级包。
 
 设备服务端、Agora RTC 云服务和云端 AI Agent 不属于本仓库。运行完整业务流程需要接入
-与 mybot 协议兼容的设备服务。
+与 SDK 协议兼容的设备服务。
 
 ## 系统架构
 
@@ -39,7 +41,7 @@
 flowchart LR
     user["用户"] <--> device["BK7258 设备"]
     device --> platform["BK725x 平台适配<br/>Wi-Fi · Audio · Key · LCD · KV · HTTPS"]
-    platform --> core["mybot SDK<br/>配网 · 配对 · 会话状态机"]
+    platform --> core["agent-studio-device-firmware<br/>配网 · 配对 · 会话状态机"]
     core <--> rtc["Agora RTC"]
     rtc <--> agent["云端 AI Agent<br/>ASR · LLM · TTS"]
 ```
@@ -47,19 +49,19 @@ flowchart LR
 BK7258 固件采用 AP/CP 双核结构：
 
 - **CP** 负责基础系统初始化和 SMP 启动控制。
-- **AP** 初始化媒体服务并启动 mybot controller，承载平台适配、设备生命周期、网络、
+- **AP** 初始化媒体服务并启动固件控制器，承载平台适配、设备生命周期、网络、
   音频、显示和 RTC 会话。
 - **Controller** 根据已保存的 Wi-Fi 凭据选择 APSTA 配网或普通 STA 模式；网络连接后
-  异步启动 mybot SDK，并负责断网恢复及异常重启。
+  异步启动 SDK，并负责断网恢复及异常重启。
 
 ## 仓库结构
 
 | 路径 | 职责 | 跟踪分支 |
 | --- | --- | --- |
 | `bk_avdk_smp/` | BK7258 SMP SDK、Agora IoT SDK、AOSL 和平台基础组件 | `release/v3.1.1-mybot` |
-| `bk_solution_ai/` | AI 解决方案、mybot SDK 快照、BK725x 平台适配和固件工程 | `release/v3.1.1-mybot` |
+| `bk_solution_ai/` | AI 解决方案、SDK 快照、BK725x 平台适配和固件工程 | `release/v3.1.1-mybot` |
 | `bk_solution_ai/projects/mybot/` | AP/CP 入口、板级配置、分区表和提示音资源 | 随 `bk_solution_ai` |
-| `bk_solution_ai/components/mybot/` | mybot 核心及 `platforms/bk725x` 平台实现 | 随 `bk_solution_ai` |
+| `bk_solution_ai/components/mybot/` | SDK 核心及 `platforms/bk725x` 平台实现 | 随 `bk_solution_ai` |
 
 顶层仓库中的 gitlink 固定两个子模块的准确提交，从而保证不同开发环境使用相同源码。
 `.gitmodules` 中的 `branch` 仅用于维护者执行远端更新时选择目标分支。
@@ -69,7 +71,7 @@ BK7258 固件采用 AP/CP 双核结构：
 - Git，并支持 Git submodule。
 - Linux 构建环境及 `bk_avdk_smp` 所需的交叉编译工具链。
 - BK7258 开发板或采用相同外设连接的兼容硬件。
-- 可用的 mybot 设备服务和 Agora 服务配置。
+- 可用的 SDK 设备服务和 Agora 服务配置。
 
 BK7258 SDK 环境和烧录工具的安装方法请参考
 [Beken BK7258 SMP 文档](https://docs.bekencorp.com/arminodoc/bk_avdk_smp/smp_doc/bk7258/zh_CN/v3.1.1/index.html)。
@@ -79,8 +81,8 @@ BK7258 SDK 环境和烧录工具的安装方法请参考
 推荐通过 HTTPS 递归克隆：
 
 ```bash
-git clone --recurse-submodules https://github.com/junlon2006/mybot-bk7258.git
-cd mybot-bk7258
+git clone --recurse-submodules https://github.com/AgoraIO-Community/agora-r1-devkit.git
+cd agora-r1-devkit
 ```
 
 已经克隆顶层仓库但尚未获取子模块时执行：
@@ -136,7 +138,7 @@ CP、AP 独立二进制分别位于：
 1. 首次启动或没有有效 Wi-Fi 凭据时，设备进入 APSTA 配网模式并创建
    `mybot-xxx` SoftAP。
 2. 连接该热点并访问 `http://192.168.4.1/`，选择目标网络并提交凭据。
-3. 设备连接网络后启动 mybot SDK，完成设备注册、配对和认证。
+3. 设备连接网络后启动 SDK，完成设备注册、配对和认证。
 4. 未认领设备会显示并播报配对码；完成认领后即可通过按键开始 AI 语音会话。
 
 当前参考板按键定义如下：
@@ -160,7 +162,7 @@ GPIO、显示屏和音频外设连接属于板级配置；适配其他 BK7258 �
 - Flash 分区：`bk_solution_ai/projects/mybot/partitions/bk7258/auto_partitions.csv`
 - SRAM/PSRAM：`bk_solution_ai/projects/mybot/partitions/bk7258/ram_regions.csv`
 
-mybot Kconfig 当前提供：
+固件工程的 Kconfig 当前提供：
 
 - `CONFIG_MYBOT_LANGUAGE_ZH_CN`：中文服务区域和中文提示音。
 - `CONFIG_MYBOT_LANGUAGE_EN_US`：英文服务区域和英文提示音。
@@ -203,7 +205,7 @@ git submodule sync --recursive
 git submodule update --init --recursive
 ```
 
-维护者需要更新 mybot 分支时，可执行：
+维护者需要更新子模块跟踪分支时，可执行：
 
 ```bash
 git submodule update --remote --checkout bk_avdk_smp bk_solution_ai
@@ -215,10 +217,10 @@ git diff --submodule=log
 
 ## 文档
 
-- [mybot 项目](https://github.com/junlon2006/mybot)
-- [mybot 中文文档](https://github.com/junlon2006/mybot/blob/main/README.zh-CN.md)
-- [mybot 移植指南](https://github.com/junlon2006/mybot/blob/main/docs/PORTING.zh-CN.md)
-- [mybot 嵌入式集成指南](https://github.com/junlon2006/mybot/blob/main/docs/EMBEDDED.zh-CN.md)
+- [agent-studio-device-firmware 项目](https://github.com/AgoraIO-Community/agent-studio-device-firmware)
+- [agent-studio-device-firmware 中文文档](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/README.zh-CN.md)
+- [agent-studio-device-firmware 移植指南](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.zh-CN.md)
+- [agent-studio-device-firmware 嵌入式集成指南](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/EMBEDDED.zh-CN.md)
 - [BK7258 平台组件说明](bk_solution_ai/components/mybot/README.md)
 
 ## 贡献
@@ -226,13 +228,13 @@ git diff --submodule=log
 欢迎通过 Issue 和 Pull Request 参与改进：
 
 - 平台无关的 SDK 功能和公共接口改动，请优先提交到
-  [mybot 上游项目](https://github.com/junlon2006/mybot)。
+  [agent-studio-device-firmware 上游项目](https://github.com/AgoraIO-Community/agent-studio-device-firmware)。
 - BK7258 平台适配和固件工程改动，应提交到对应的
   [bk_solution_ai](https://github.com/junlon2006/bk_solution_ai) 或
   [bk_avdk_smp](https://github.com/junlon2006/bk_avdk_smp) 仓库，再更新本仓库的
   submodule 指针。
 - 集成、构建和文档问题可提交到
-  [mybot-bk7258 Issues](https://github.com/junlon2006/mybot-bk7258/issues)。
+  [agora-r1-devkit Issues](https://github.com/AgoraIO-Community/agora-r1-devkit/issues)。
 
 提交代码前请保持改动范围清晰，说明使用的硬件、配置和验证方式，并避免将构建产物
 提交到版本库。
@@ -245,10 +247,10 @@ git diff --submodule=log
 
 - [bk_avdk_smp 许可证](bk_avdk_smp/LICENSE)
 - [bk_solution_ai 许可证](bk_solution_ai/LICENSE)
-- [mybot SDK 许可证](bk_solution_ai/components/mybot/LICENSE)
+- [agent-studio-device-firmware SDK 许可证](bk_solution_ai/components/mybot/LICENSE)
 - [AOSL 许可证及附加条款](bk_avdk_smp/ap/components/bk_thirdparty/agora-iot-sdk/hal/aosl/LICENSE)
 - [提示音资源许可证](bk_solution_ai/projects/mybot/assets/LICENSE.xiaozhi-esp32)
-- [mybot 第三方依赖说明](https://github.com/junlon2006/mybot/blob/main/THIRD_PARTY_NOTICES.md)
+- [agent-studio-device-firmware 第三方依赖说明](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/THIRD_PARTY_NOTICES.md)
 
 Agora RTSA 等预编译二进制可能受试用期限、再分发和商业授权限制。将本项目用于产品或
 对外分发固件前，请独立核实并遵守所有适用条款。

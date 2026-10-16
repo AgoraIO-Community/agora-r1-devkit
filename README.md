@@ -1,13 +1,14 @@
-# mybot-bk7258
+# agora-r1-devkit
 
-[![License](https://img.shields.io/github/license/junlon2006/mybot-bk7258)](LICENSE)
-[![Upstream](https://img.shields.io/badge/upstream-mybot-0969da)](https://github.com/junlon2006/mybot)
+[![License](https://img.shields.io/github/license/AgoraIO-Community/agora-r1-devkit)](LICENSE)
+[![Upstream](https://img.shields.io/badge/upstream-agent--studio--device--firmware-0969da)](https://github.com/AgoraIO-Community/agent-studio-device-firmware)
 [![Platform](https://img.shields.io/badge/platform-BK7258-2f6f4e)](https://github.com/bekencorp/bk_avdk_smp)
 
 **[简体中文](README.zh-CN.md) | English**
 
-**mybot-bk7258** is the BK7258 SMP reference implementation of the open-source
-[mybot](https://github.com/junlon2006/mybot) AI voice conversation SDK. This repository organizes
+**agora-r1-devkit** is the BK7258 SMP reference implementation of the open-source
+[agent-studio-device-firmware](https://github.com/AgoraIO-Community/agent-studio-device-firmware)
+AI voice conversation SDK. This repository organizes
 the BK7258 SMP SDK, the AI solution, the BK725x platform port, and a buildable dual-core firmware
 project as pinned Git submodules. It is intended to provide reproducible builds, a practical
 platform development baseline, and a shared foundation for community collaboration.
@@ -17,15 +18,16 @@ platform development baseline, and a shared foundation for community collaborati
 > validation for the target hardware, and verify the licensing and commercial-use terms of all
 > third-party components.
 
-## Relationship to upstream mybot
+## Relationship to agent-studio-device-firmware
 
-[mybot](https://github.com/junlon2006/mybot) is a cross-platform AI voice conversation SDK for
+[agent-studio-device-firmware](https://github.com/AgoraIO-Community/agent-studio-device-firmware)
+is a cross-platform AI voice conversation SDK for
 edge devices. Its core is written in C99, uses AOSL as its portable runtime, and obtains device
 capabilities such as Wi-Fi, persistent storage, buttons, displays, audio, and network transport
 through platform `ops` interfaces.
 
-This repository does not redefine the mybot SDK. It provides the complete implementation required
-to run mybot on the BK7258 platform:
+This repository does not redefine the upstream SDK. It provides the complete implementation
+required to run the SDK on the BK7258 platform:
 
 - BK7258 AP/CP dual-core startup, memory layout, and Flash partition configuration.
 - BK725x Wi-Fi APSTA provisioning, network reconnection, and credential persistence.
@@ -36,7 +38,7 @@ to run mybot on the BK7258 platform:
 - A complete flash image and an OTA package containing both the CP and AP firmware.
 
 The device service, Agora RTC cloud service, and cloud AI agent are not part of this repository. A
-device service compatible with the mybot protocol is required to run the complete workflow.
+device service compatible with the SDK protocol is required to run the complete workflow.
 
 ## System architecture
 
@@ -44,7 +46,7 @@ device service compatible with the mybot protocol is required to run the complet
 flowchart LR
     user["User"] <--> device["BK7258 device"]
     device --> platform["BK725x platform port<br/>Wi-Fi · Audio · Key · LCD · KV · HTTPS"]
-    platform --> core["mybot SDK<br/>Provisioning · Pairing · Session state machine"]
+    platform --> core["agent-studio-device-firmware<br/>Provisioning · Pairing · Session state machine"]
     core <--> rtc["Agora RTC"]
     rtc <--> agent["Cloud AI agent<br/>ASR · LLM · TTS"]
 ```
@@ -52,10 +54,10 @@ flowchart LR
 The BK7258 firmware uses an AP/CP dual-core architecture:
 
 - **CP** performs base system initialization and SMP startup control.
-- **AP** initializes the media service and starts the mybot controller. It hosts the platform
+- **AP** initializes the media service and starts the firmware controller. It hosts the platform
   adapters, device lifecycle, networking, audio, display, and RTC session.
 - **Controller** selects APSTA provisioning or normal STA mode according to the saved Wi-Fi
-  credentials. After the network connects, it starts the mybot SDK asynchronously and manages
+  credentials. After the network connects, it starts the SDK asynchronously and manages
   network recovery and unexpected SDK restarts.
 
 ## Repository layout
@@ -63,9 +65,9 @@ The BK7258 firmware uses an AP/CP dual-core architecture:
 | Path | Responsibility | Tracking branch |
 | --- | --- | --- |
 | `bk_avdk_smp/` | BK7258 SMP SDK, Agora IoT SDK, AOSL, and platform foundation components | `release/v3.1.1-mybot` |
-| `bk_solution_ai/` | AI solution, mybot SDK snapshot, BK725x platform port, and firmware project | `release/v3.1.1-mybot` |
+| `bk_solution_ai/` | AI solution, SDK snapshot, BK725x platform port, and firmware project | `release/v3.1.1-mybot` |
 | `bk_solution_ai/projects/mybot/` | AP/CP entry points, board configuration, partition table, and prompt assets | From `bk_solution_ai` |
-| `bk_solution_ai/components/mybot/` | mybot core and the `platforms/bk725x` implementation | From `bk_solution_ai` |
+| `bk_solution_ai/components/mybot/` | SDK core and the `platforms/bk725x` implementation | From `bk_solution_ai` |
 
 The gitlinks in the top-level repository pin both submodules to exact commits so that every
 development environment uses the same source revisions. The `branch` values in `.gitmodules`
@@ -76,7 +78,7 @@ are used only when maintainers explicitly update the submodules from their remot
 - Git with Git submodule support.
 - A Linux build environment and the cross-compilation toolchain required by `bk_avdk_smp`.
 - A BK7258 development board or compatible hardware using the same peripheral connections.
-- Access to a compatible mybot device service and valid Agora service configuration.
+- Access to a compatible SDK device service and valid Agora service configuration.
 
 For BK7258 SDK environment setup and flashing tools, refer to the
 [Beken BK7258 SMP documentation](https://docs.bekencorp.com/arminodoc/bk_avdk_smp/smp_doc/bk7258/en/v3.1.1/index.html).
@@ -86,8 +88,8 @@ For BK7258 SDK environment setup and flashing tools, refer to the
 Clone the repository and its submodules over HTTPS:
 
 ```bash
-git clone --recurse-submodules https://github.com/junlon2006/mybot-bk7258.git
-cd mybot-bk7258
+git clone --recurse-submodules https://github.com/AgoraIO-Community/agora-r1-devkit.git
+cd agora-r1-devkit
 ```
 
 If the top-level repository has already been cloned without its submodules, run:
@@ -146,7 +148,7 @@ The reference device workflow is:
    mode and creates a `mybot-xxx` SoftAP.
 2. Connect to the SoftAP and open `http://192.168.4.1/`, then select the target network and submit
    its credentials.
-3. After connecting to the network, the device starts the mybot SDK and performs device
+3. After connecting to the network, the device starts the SDK and performs device
    registration, pairing, and authentication.
 4. An unclaimed device displays and announces its pairing code. After the device is claimed, use
    the action button to start an AI voice conversation.
@@ -172,7 +174,7 @@ The primary project configuration files are:
 - Flash partitions: `bk_solution_ai/projects/mybot/partitions/bk7258/auto_partitions.csv`
 - SRAM/PSRAM layout: `bk_solution_ai/projects/mybot/partitions/bk7258/ram_regions.csv`
 
-The mybot Kconfig currently provides:
+The firmware project Kconfig currently provides:
 
 - `CONFIG_MYBOT_LANGUAGE_ZH_CN`: Chinese service region and Chinese prompt assets.
 - `CONFIG_MYBOT_LANGUAGE_EN_US`: English service region and English prompt assets.
@@ -218,7 +220,7 @@ git submodule sync --recursive
 git submodule update --init --recursive
 ```
 
-Maintainers can explicitly update both mybot branches with:
+Maintainers can explicitly update both configured submodule branches with:
 
 ```bash
 git submodule update --remote --checkout bk_avdk_smp bk_solution_ai
@@ -231,10 +233,10 @@ submodule.
 
 ## Documentation
 
-- [mybot project](https://github.com/junlon2006/mybot)
-- [mybot English documentation](https://github.com/junlon2006/mybot/blob/main/README.md)
-- [mybot porting guide](https://github.com/junlon2006/mybot/blob/main/docs/PORTING.md)
-- [mybot embedded integration guide](https://github.com/junlon2006/mybot/blob/main/docs/EMBEDDED.md)
+- [agent-studio-device-firmware project](https://github.com/AgoraIO-Community/agent-studio-device-firmware)
+- [agent-studio-device-firmware English documentation](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/README.md)
+- [agent-studio-device-firmware porting guide](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.md)
+- [agent-studio-device-firmware embedded integration guide](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/EMBEDDED.md)
 - [BK7258 platform component notes](bk_solution_ai/components/mybot/README.md)
 
 ## Contributing
@@ -242,13 +244,13 @@ submodule.
 Issues and pull requests are welcome:
 
 - Submit platform-independent SDK features and public API changes to the
-  [upstream mybot project](https://github.com/junlon2006/mybot).
+  [upstream agent-studio-device-firmware project](https://github.com/AgoraIO-Community/agent-studio-device-firmware).
 - Submit BK7258 platform or firmware changes to
   [bk_solution_ai](https://github.com/junlon2006/bk_solution_ai) or
   [bk_avdk_smp](https://github.com/junlon2006/bk_avdk_smp), then update the corresponding submodule
   pointer in this repository.
 - Report integration, build, and documentation issues in
-  [mybot-bk7258 Issues](https://github.com/junlon2006/mybot-bk7258/issues).
+  [agora-r1-devkit Issues](https://github.com/AgoraIO-Community/agora-r1-devkit/issues).
 
 Keep each change focused. Describe the hardware, configuration, and validation used, and do not
 commit build artifacts.
@@ -263,10 +265,10 @@ terms of use, including but not limited to:
 
 - [bk_avdk_smp license](bk_avdk_smp/LICENSE)
 - [bk_solution_ai license](bk_solution_ai/LICENSE)
-- [mybot SDK license](bk_solution_ai/components/mybot/LICENSE)
+- [agent-studio-device-firmware SDK license](bk_solution_ai/components/mybot/LICENSE)
 - [AOSL license and additional terms](bk_avdk_smp/ap/components/bk_thirdparty/agora-iot-sdk/hal/aosl/LICENSE)
 - [Prompt asset license](bk_solution_ai/projects/mybot/assets/LICENSE.xiaozhi-esp32)
-- [mybot third-party notices](https://github.com/junlon2006/mybot/blob/main/THIRD_PARTY_NOTICES.md)
+- [agent-studio-device-firmware third-party notices](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/THIRD_PARTY_NOTICES.md)
 
 Prebuilt binaries such as Agora RTSA may be subject to evaluation periods, redistribution
 restrictions, and commercial licensing requirements. Before using this project in a product or
