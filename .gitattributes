@@ -1,0 +1,2 @@
+# Vendored RTSA must remain the exact binary archive recorded in snapshots.json.
+components/mybot/mybot_rtsa/lib/arm/*.a binary

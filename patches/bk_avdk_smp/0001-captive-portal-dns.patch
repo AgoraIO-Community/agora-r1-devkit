@@ -1,0 +1,336 @@
+diff --git a/ap/components/lwip_intf_v2_1/dhcpd/dhcp-server-multi.c b/ap/components/lwip_intf_v2_1/dhcpd/dhcp-server-multi.c
+index 4d43c5dc7..992275a73 100755
+--- a/ap/components/lwip_intf_v2_1/dhcpd/dhcp-server-multi.c
++++ b/ap/components/lwip_intf_v2_1/dhcpd/dhcp-server-multi.c
+@@ -343,8 +343,6 @@ static int send_response(int sock, struct sockaddr *addr, char *msg, int len)
+ 	return 0;
+ }
+ 
+-#define ERROR_REFUSED 5
+-
+ static const char *dhcp_msg_type_str(uint8_t type)
+ {
+ 	switch (type) {
+@@ -362,15 +360,20 @@ static const char *dhcp_msg_type_str(uint8_t type)
+ static int process_dns_message(char *msg, int len, struct sockaddr_in *fromaddr)
+ {
+ 	struct dns_header *hdr;
+-	char *endp = msg + len;
++	struct dns_rr *answer;
++	char *question_end;
++	char *endp;
++	bool name_done = false;
+ 	int nq;
+ 
+-	if (len < sizeof(struct dns_header)) {
++	if (!msg || len < (int)sizeof(struct dns_header) ||
++	    (size_t)len + sizeof(struct dns_rr) > SERVER_BUFFER_SIZE) {
+ 		dhcp_e("DNS request is not complete, hence ignoring it\r\n");
+ 		return -1;
+ 	}
+ 
+ 	hdr = (struct dns_header *)msg;
++	hdr->flags.num = ntohs(hdr->flags.num);
+ 
+ 	dhcp_d("DNS transaction id: 0x%x\r\n", htons(hdr->id));
+ 
+@@ -382,29 +385,60 @@ static int process_dns_message(char *msg, int len, struct sockaddr_in *fromaddr)
+ 	nq = ntohs(hdr->num_questions);
+ 	dhcp_d("we were asked %d questions\r\n", nq);
+ 
+-	if (nq <= 0) {
+-		dhcp_e("ignoring this dns msg (not a query or 0 questions)\r\n");
++	if (nq != 1) {
++		dhcp_e("ignoring this dns msg (expected exactly one question)\r\n");
++		return -1;
++	}
++
++	question_end = msg + sizeof(struct dns_header);
++	endp = msg + len;
++	while (question_end < endp) {
++		uint8_t label_len = *(uint8_t *)question_end++;
++		if (label_len == 0) {
++			name_done = true;
++			break;
++		}
++		if ((label_len & 0xc0) == 0xc0) {
++			if (question_end >= endp)
++				return -1;
++			question_end++;
++			name_done = true;
++			break;
++		}
++		if ((label_len & 0xc0) != 0 || endp - question_end < label_len)
++			return -1;
++		question_end += label_len;
++	}
++	if (!name_done || endp - question_end < (int)sizeof(struct dns_question) ||
++	    (size_t)(question_end - msg) + sizeof(struct dns_question) +
++	        sizeof(struct dns_rr) > SERVER_BUFFER_SIZE) {
++		dhcp_e("DNS question is not complete, hence ignoring it\r\n");
+ 		return -1;
+ 	}
++	question_end += sizeof(struct dns_question);
++	answer = (struct dns_rr *)question_end;
++	answer->name_ptr = htons(0xc00c);
++	answer->type = htons(1);
++	answer->class = htons(1);
++	answer->ttl = htonl(28);
++	answer->rdlength = htons(4);
++	answer->rd = dhcps.router_ip;
+ 
+ 	/* make the header represent a response */
+ 	hdr->flags.fields.qr = 1;
+ 	hdr->flags.fields.opcode = 0;
+-	/* Errors are never authoritative (unless they are
+-	   NXDOMAINS, which this is not) */
+ 	hdr->flags.fields.aa = 0;
+ 	hdr->flags.fields.tc = 0;
+-	hdr->flags.fields.rd = 1;
+-	hdr->flags.fields.ra = 0;
+-	hdr->flags.fields.rcode = ERROR_REFUSED;
++	hdr->flags.fields.ra = 1;
++	hdr->flags.fields.rcode = 0;
+ 	hdr->flags.num = htons(hdr->flags.num);
+ 	/* number of entries in questions section */
+ 	hdr->num_questions  = htons(0x01);
+-	hdr->answer_rrs = 0; /* number of resource records in answer section */
++	hdr->answer_rrs = htons(1);
+ 	hdr->authority_rrs = 0;
+ 	hdr->additional_rrs = 0;
+ 	SEND_RESPONSE(dhcps.dnssock, (struct sockaddr *)fromaddr,
+-		      msg, endp - msg);
++		      msg, question_end - msg + sizeof(struct dns_rr));
+ 
+ 	return -1;
+ }
+diff --git a/ap/components/lwip_intf_v2_1/dhcpd/dhcp-server.c b/ap/components/lwip_intf_v2_1/dhcpd/dhcp-server.c
+index 334d521a7..09d598221 100755
+--- a/ap/components/lwip_intf_v2_1/dhcpd/dhcp-server.c
++++ b/ap/components/lwip_intf_v2_1/dhcpd/dhcp-server.c
+@@ -294,19 +294,23 @@ static int send_response(int sock, struct sockaddr *addr, char *msg, int len)
+ 	return 0;
+ }
+ 
+-#define ERROR_REFUSED 5
+ static int process_dns_message(char *msg, int len, struct sockaddr_in *fromaddr)
+ {
+ 	struct dns_header *hdr;
+-	char *endp = msg + len;
++	struct dns_rr *answer;
++	char *question_end;
++	char *endp;
++	bool name_done = false;
+ 	int nq;
+ 
+-	if (len < sizeof(struct dns_header)) {
++	if (!msg || len < (int)sizeof(struct dns_header) ||
++	    (size_t)len + sizeof(struct dns_rr) > SERVER_BUFFER_SIZE) {
+ 		dhcp_e("DNS request is not complete, hence ignoring it\r\n");
+ 		return -1;
+ 	}
+ 
+ 	hdr = (struct dns_header *)msg;
++	hdr->flags.num = ntohs(hdr->flags.num);
+ 
+ 	dhcp_d("DNS transaction id: 0x%x\r\n", htons(hdr->id));
+ 
+@@ -318,29 +322,60 @@ static int process_dns_message(char *msg, int len, struct sockaddr_in *fromaddr)
+ 	nq = ntohs(hdr->num_questions);
+ 	dhcp_d("we were asked %d questions\r\n", nq);
+ 
+-	if (nq <= 0) {
+-		dhcp_e("ignoring this dns msg (not a query or 0 questions)\r\n");
++	if (nq != 1) {
++		dhcp_e("ignoring this dns msg (expected exactly one question)\r\n");
+ 		return -1;
+ 	}
+ 
++	question_end = msg + sizeof(struct dns_header);
++	endp = msg + len;
++	while (question_end < endp) {
++		uint8_t label_len = *(uint8_t *)question_end++;
++		if (label_len == 0) {
++			name_done = true;
++			break;
++		}
++		if ((label_len & 0xc0) == 0xc0) {
++			if (question_end >= endp)
++				return -1;
++			question_end++;
++			name_done = true;
++			break;
++		}
++		if ((label_len & 0xc0) != 0 || endp - question_end < label_len)
++			return -1;
++		question_end += label_len;
++	}
++	if (!name_done || endp - question_end < (int)sizeof(struct dns_question) ||
++	    (size_t)(question_end - msg) + sizeof(struct dns_question) +
++	        sizeof(struct dns_rr) > SERVER_BUFFER_SIZE) {
++		dhcp_e("DNS question is not complete, hence ignoring it\r\n");
++		return -1;
++	}
++	question_end += sizeof(struct dns_question);
++	answer = (struct dns_rr *)question_end;
++	answer->name_ptr = htons(0xc00c);
++	answer->type = htons(1);
++	answer->class = htons(1);
++	answer->ttl = htonl(28);
++	answer->rdlength = htons(4);
++	answer->rd = dhcps.router_ip;
++
+ 	/* make the header represent a response */
+ 	hdr->flags.fields.qr = 1;
+ 	hdr->flags.fields.opcode = 0;
+-	/* Errors are never authoritative (unless they are
+-	   NXDOMAINS, which this is not) */
+ 	hdr->flags.fields.aa = 0;
+ 	hdr->flags.fields.tc = 0;
+-	hdr->flags.fields.rd = 1;
+-	hdr->flags.fields.ra = 0;
+-	hdr->flags.fields.rcode = ERROR_REFUSED;
++	hdr->flags.fields.ra = 1;
++	hdr->flags.fields.rcode = 0;
+ 	hdr->flags.num = htons(hdr->flags.num);
+ 	/* number of entries in questions section */
+ 	hdr->num_questions  = htons(0x01);
+-	hdr->answer_rrs = 0; /* number of resource records in answer section */
++	hdr->answer_rrs = htons(1);
+ 	hdr->authority_rrs = 0;
+ 	hdr->additional_rrs = 0;
+ 	SEND_RESPONSE(dhcps.dnssock, (struct sockaddr *)fromaddr,
+-		      msg, endp - msg);
++		      msg, question_end - msg + sizeof(struct dns_rr));
+ 
+ 	return -1;
+ }
+diff --git a/cp/components/lwip_intf_v2_1/dhcpd/dhcp-server.c b/cp/components/lwip_intf_v2_1/dhcpd/dhcp-server.c
+index f99073ffb..1a6bcae97 100755
+--- a/cp/components/lwip_intf_v2_1/dhcpd/dhcp-server.c
++++ b/cp/components/lwip_intf_v2_1/dhcpd/dhcp-server.c
+@@ -299,15 +299,21 @@ static int send_response(int sock, struct sockaddr *addr, char *msg, int len)
+ static int process_dns_message(char *msg, int len, struct sockaddr_in *fromaddr)
+ {
+ 	struct dns_header *hdr;
+-	char *endp = msg + len;
++	struct dns_rr *answer;
++	char *question_end;
++	char *endp;
++	bool name_done = false;
+ 	int nq;
+ 
+-	if (len < sizeof(struct dns_header)) {
++	if (!msg || len < (int)sizeof(struct dns_header) ||
++	    (size_t)len + sizeof(struct dns_rr) > SERVER_BUFFER_SIZE) {
+ 		dhcp_e("DNS request is not complete, hence ignoring it\r\n");
+ 		return -1;
+ 	}
+ 
++	endp = msg + len;
+ 	hdr = (struct dns_header *)msg;
++	hdr->flags.num = ntohs(hdr->flags.num);
+ 
+ 	dhcp_d("DNS transaction id: 0x%x\r\n", htons(hdr->id));
+ 
+@@ -319,16 +325,87 @@ static int process_dns_message(char *msg, int len, struct sockaddr_in *fromaddr)
+ 	nq = ntohs(hdr->num_questions);
+ 	dhcp_d("we were asked %d questions\r\n", nq);
+ 
+-	if (nq <= 0) {
+-		dhcp_e("ignoring this dns msg (not a query or 0 questions)\r\n");
++	if (nq != 1) {
++		dhcp_e("ignoring this dns msg (expected exactly one question)\r\n");
+ 		return -1;
+ 	}
+ 
++	/* The captive-portal DNS hijack is only enabled while the soft AP is
++	 * running in provisioning mode (built-in DNS enabled, i.e.
++	 * disable_dns_server == 0, which is how the provisioning flow starts
++	 * the configuration SoftAP). Any other configuration keeps the
++	 * original REFUSED reply, so this server never fabricates answers for
++	 * a regular (non-provisioning) AP. */
++	if (!g_ap_param_ptr || g_ap_param_ptr->disable_dns_server) {
++		dhcp_d("DNS server disabled, refusing\r\n");
++		goto refused;
++	}
++
++	/* Skip the question's name (a sequence of length-prefixed labels,
++	 * possibly ending in a compression pointer). */
++	question_end = msg + sizeof(struct dns_header);
++	while (question_end < endp) {
++		uint8_t label_len = *(uint8_t *)question_end++;
++		if (label_len == 0) {
++			name_done = true;
++			break;
++		}
++		if ((label_len & 0xc0) == 0xc0) {
++			if (question_end >= endp)
++				goto malformed;
++			question_end++;
++			name_done = true;
++			break;
++		}
++		if ((label_len & 0xc0) != 0 || endp - question_end < label_len)
++			goto malformed;
++		question_end += label_len;
++	}
++	if (!name_done || endp - question_end < (int)sizeof(struct dns_question) ||
++	    (size_t)(question_end - msg) + sizeof(struct dns_question) +
++	        sizeof(struct dns_rr) > SERVER_BUFFER_SIZE)
++		goto malformed;
++	question_end += sizeof(struct dns_question);
++
++	/* Captive-portal DNS: answer every query with an A record pointing
++	 * to the AP's own IP (dhcps.router_ip, already network byte order),
++	 * so the phone's captive-portal detection (captive.apple.com on iOS,
++	 * connectivitycheck.gstatic.com on Android) resolves to this device
++	 * and the browser auto-jumps to the configuration page. */
++	answer = (struct dns_rr *)question_end;
++	answer->name_ptr = htons(0xc00c);
++	answer->type = htons(1);
++	answer->class = htons(1);
++	answer->ttl = htonl(28);
++	answer->rdlength = htons(4);
++	answer->rd = dhcps.router_ip;
++
+ 	/* make the header represent a response */
+ 	hdr->flags.fields.qr = 1;
+ 	hdr->flags.fields.opcode = 0;
+-	/* Errors are never authoritative (unless they are
+-	   NXDOMAINS, which this is not) */
++	hdr->flags.fields.aa = 0;
++	hdr->flags.fields.tc = 0;
++	hdr->flags.fields.ra = 1;
++	hdr->flags.fields.rcode = 0;
++	hdr->flags.num = htons(hdr->flags.num);
++	/* number of entries in questions section */
++	hdr->num_questions  = htons(0x01);
++	hdr->answer_rrs = htons(1);
++	hdr->authority_rrs = 0;
++	hdr->additional_rrs = 0;
++	SEND_RESPONSE(dhcps.dnssock, (struct sockaddr *)fromaddr,
++		      msg, question_end - msg + sizeof(struct dns_rr));
++
++	return 0;
++
++malformed:
++	dhcp_e("malformed DNS question, refusing\r\n");
++	goto refused;
++
++refused:
++	/* make the header represent a refused response */
++	hdr->flags.fields.qr = 1;
++	hdr->flags.fields.opcode = 0;
+ 	hdr->flags.fields.aa = 0;
+ 	hdr->flags.fields.tc = 0;
+ 	hdr->flags.fields.rd = 1;
+@@ -337,7 +414,7 @@ static int process_dns_message(char *msg, int len, struct sockaddr_in *fromaddr)
+ 	hdr->flags.num = htons(hdr->flags.num);
+ 	/* number of entries in questions section */
+ 	hdr->num_questions  = htons(0x01);
+-	hdr->answer_rrs = 0; /* number of resource records in answer section */
++	hdr->answer_rrs = 0;
+ 	hdr->authority_rrs = 0;
+ 	hdr->additional_rrs = 0;
+ 	SEND_RESPONSE(dhcps.dnssock, (struct sockaddr *)fromaddr,
