@@ -1,0 +1,25 @@
+menu "mybot SDK Configuration"
+
+    choice MYBOT_LANGUAGE
+        prompt "mybot device language"
+        default MYBOT_LANGUAGE_ZH_CN
+        help
+            Select the device language. It drives the service endpoint, the
+            SD-card assets directory and the audio prompt language tag.
+            Chinese and English are currently supported.
+
+        config MYBOT_LANGUAGE_ZH_CN
+            bool "Chinese"
+
+        config MYBOT_LANGUAGE_EN_US
+            bool "English"
+    endchoice
+
+    config MYBOT_DEBUG_CPU
+        bool "Enable periodic CPU usage diagnostics"
+        default n
+        help
+            Start a dedicated monitor thread that prints the system task CPU
+            runtime statistics every 10 seconds.
+
+endmenu
