@@ -6,7 +6,7 @@ repository. Building no longer requires the `junlon2006/bk_avdk_smp` or
 
 The migration starts from the updated BK7258 main revision
 `04c828300b1a80cfc6e8cca70e98e2cf1d14b99c`. Its product source has been refreshed from the pinned
-solution revision `438f132542bf3f0bb2f79aee49154d83cd6fdaf9`, preserving mybot SDK 1.2.0,
+solution revision `438f132542bf3f0bb2f79aee49154d83cd6fdaf9`, preserving agent-studio-device-firmware SDK 1.2.0,
 the audio lifecycle, device identity implementation, LCD status badges, and regional service
 configuration.
 
@@ -34,7 +34,7 @@ changes before creating a build workspace.
 | Path | Content |
 | --- | --- |
 | `projects/mybot/` | AP/CP entry points, board configuration, Flash/RAM layouts, OGG assets, and asset-generation scripts |
-| `components/mybot/mybot_sdk/` | mybot SDK 1.2.0 snapshot, BK725x adapters and modules, and embedded prompt arrays |
+| `components/mybot/mybot_sdk/` | agent-studio-device-firmware SDK 1.2.0 snapshot, BK725x adapters and modules, and embedded prompt arrays |
 | `components/mybot/mybot_aosl/` | BK7258 AOSL runtime snapshot and platform adaptation from the pinned AVDK source |
 | `components/mybot/mybot_rtsa/` | BK7258 Agora RTSA headers and library, build `1292388`, from the pinned AVDK source |
 

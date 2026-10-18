@@ -1,12 +1,12 @@
-# mybot
+# agent-studio-device-firmware
 
-[![CI](https://github.com/junlon2006/mybot/actions/workflows/ci.yml/badge.svg)](https://github.com/junlon2006/mybot/actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/junlon2006/mybot)](LICENSE)
+[![CI](https://github.com/AgoraIO-Community/agent-studio-device-firmware/actions/workflows/ci.yml/badge.svg)](https://github.com/AgoraIO-Community/agent-studio-device-firmware/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/AgoraIO-Community/agent-studio-device-firmware)](LICENSE)
 
-**[English](README.md) | [简体中文](README.zh-CN.md)**
+**[English](README.md) | [简体中文](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/README.zh-CN.md)**
 
-`mybot` is a cross-platform **AI multimodal interaction SDK** for edge devices: it lets smart devices
-send voice and optional device-camera video to cloud AI agents over Agora RTC for real-time
+`agent-studio-device-firmware` is a cross-platform **AI multimodal interaction SDK** for edge devices:
+it lets smart devices send voice and optional device-camera video to cloud AI agents over Agora RTC for real-time
 conversation and visual recognition. The platform/application owns
 network provisioning and Wi-Fi credentials; the SDK consumes connectivity events and handles device
 pairing and authentication, a conversation state machine, full-duplex voice interaction (Agora RTSA
@@ -72,8 +72,9 @@ RTOS, or a bare-metal MCU.
   and exposes `MYBOT_LCD_INDICATOR_VP_REGISTERED` as an in-conversation LCD overlay.
 - **Cloud MCP device commands**: Receive session-bound DeviceCommand v1 messages over RTM to
   control playback volume/mute and request happy, sad, angry, or surprised LCD expressions.
-  The cloud owns MCP tool invocation; the SDK reuses its media and LCD paths. Integration is
-  described in [PORTING.md](docs/PORTING.md#mcp-device-commands).
+  The cloud owns MCP tool invocation; the SDK reuses its media and LCD paths. See the
+  [platform integration guide](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.md)
+  for the general platform contract.
 - **Pairing-code voice prompt**: Once per pair code, plays a fixed prompt ("Please enter the
   pairing code in the console") followed by one sound per digit through the normal speaker path. Assets are raw
   16 kHz mono s16 PCM files under `./assets/locales/<locale>/` (`prompt.pcm`, `0.pcm`..`9.pcm`);
@@ -132,6 +133,10 @@ For the device-side audio pipeline and state machine, see [Architecture](#archit
 
 ## Quick start
 
+The Linux build sections below apply to the complete
+[agent-studio-device-firmware repository](https://github.com/AgoraIO-Community/agent-studio-device-firmware);
+this BK7258 snapshot is not a standalone Linux project.
+
 The Linux reference platform lets you run the full workflow on a development machine. Requirements:
 Linux x86_64, CMake 3.16+, a C99 compiler, and ALSA and OpenSSL development packages. The bundled
 Agora RTSA shared library is also the x86_64 Linux build. AOSL is pulled in as a pinned git
@@ -163,8 +168,7 @@ digest suffixes on different platforms still produce different complete IDs.
 The product generates it as `<chip>-<24 uppercase hex characters>`: use the first
 12 bytes of HMAC-SHA256 over its stable MAC address, with a fixed platform derivation key.
 The chip prefix is at most 7 ASCII characters, so the complete ID is at most 32 characters,
-excluding the terminating NUL. See [Device ID generation](docs/PORTING.md#device-id-generation)
-for the input and key rules. The SDK receives this ID; it does not generate it.
+excluding the terminating NUL. The SDK receives this ID; it does not generate it.
 
 Run the example with the overseas service:
 
@@ -192,7 +196,7 @@ override the location with the `MYBOT_KV_STORE_DIR` environment variable.
 
 ## Integrating into a host project
 
-We recommend vendoring the repository as a source submodule, and mybot itself depends on AOSL
+We recommend vendoring the repository as a source submodule, and the SDK itself depends on AOSL
 through a nested submodule — initialize submodules after adding it with
 `git submodule update --init --recursive`.
 The host must provide an Agora RTSA header and shared or static library matching the target
@@ -225,16 +229,16 @@ descriptor.
 `mybot_start()` then checks the ops required by the active build and runtime configuration before
 creating any platform resources. Every platform is submitted through this one descriptor. For the
 full implementation order, minimal code, threading constraints, and acceptance checklist, see
-[docs/PORTING.md](docs/PORTING.md).
+[docs/PORTING.md](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.md).
 
-The product completes network provisioning before starting MyBot and stops MyBot before entering
+The product completes network provisioning before starting the SDK and stops the SDK before entering
 provisioning again. The SDK owns device-service pairing and conversations, independently of that
-network setup. See [PORTING: start and stop](docs/PORTING.md#step-6-start-and-stop) for the
+network setup. See [PORTING: start and stop](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.md#step-6-start-and-stop) for the
 integration sequence and example, and [mybot.h](include/mybot/mybot.h) for the API contract.
 
 The bundled Linux RTSA package is a shared library. CMake supplies a build-tree runtime path for the
 reference executable and tests. Installed-package consumers must deploy `libagora-rtc-sdk.so` and
-make it discoverable through their install RPATH or runtime loader configuration; the mybot CMake
+make it discoverable through their install RPATH or runtime loader configuration; the SDK CMake
 install target does not install or redistribute that dependency.
 
 ## Build configuration
@@ -255,7 +259,7 @@ The following options can be set via the CMake command line or cache variables b
 | `MYBOT_ALLOW_INSECURE_HTTP` | `OFF` | Local development only: explicitly allow plaintext HTTP |
 | `MYBOT_ENABLE_ASAN` | `OFF` | GCC/Clang AddressSanitizer; recommended for host tests |
 | `MYBOT_ENABLE_UBSAN` | `OFF` | GCC/Clang UndefinedBehaviorSanitizer; recommended for host tests |
-| `MYBOT_ENABLE_COVERAGE` | `OFF` | Instrument mybot targets for gcov; used by the CI coverage job |
+| `MYBOT_ENABLE_COVERAGE` | `OFF` | Instrument SDK targets for gcov; used by the CI coverage job |
 
 Two independent variables select platform code: `CONFIG_PLATFORM` chooses the AOSL HAL port
 consumed by `third_party/aosl` (e.g. `linux`, `esp32`), while `MYBOT_BUILD_LINUX_PLATFORM` builds
@@ -406,7 +410,7 @@ use separate workers. `service_mpq` handles binding-status polling and stop noti
 results return to `control_mpq`, which owns lifecycle state. HTTPS adapters must support concurrent
 independent connections. The platform owns the optional video encoder task.
 For the thread/stack budget, dynamic allocations, and timing
-measurements, see [EMBEDDED](docs/EMBEDDED.md); platform callback contracts live in the
+measurements, see [EMBEDDED](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/EMBEDDED.md); platform callback contracts live in the
 [public headers](include/mybot/platform/).
 
 ### Workflows
@@ -454,7 +458,7 @@ lets the cloud agent support user interruption.
 ```mermaid
 flowchart LR
     camera["Camera"] --> encoder["Platform encoder"]
-    encoder -->|JPEG · H.264 · H.265| video["MyBot video handler"]
+    encoder -->|JPEG · H.264 · H.265| video["SDK video handler"]
     video --> rtc_v["Agora RTC video uplink"]
     rtc_v --> vision["Cloud AI visual recognition"]
 ```
@@ -489,15 +493,15 @@ and ESP32 adapters, board configuration, and firmware builds are maintained in t
 projects linked below.
 
 - [Public headers](include/mybot/) — authoritative API and platform contracts; this README is the overview
-- [docs/PORTING.md](docs/PORTING.md) ([简体中文](docs/PORTING.zh-CN.md)) — porting guide and
+- [docs/PORTING.md](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.md) ([简体中文](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.zh-CN.md)) — porting guide and
   integration sequence and acceptance checklist
-- [mybot-bk7258](https://github.com/junlon2006/mybot-bk7258) — BK7258 reference firmware project
-- [mybot-bk7259](https://github.com/junlon2006/mybot-bk7259) — BK7259 reference firmware project
-- [mybot-esp32](https://github.com/junlon2006/mybot-esp32) — ESP32 cross-platform reference project
-- [docs/EMBEDDED.md](docs/EMBEDDED.md) ([简体中文](docs/EMBEDDED.zh-CN.md)) — footprint, memory,
+- [agora-r1-devkit](https://github.com/AgoraIO-Community/agora-r1-devkit) — BK7258 reference firmware project
+- [agora-r2-standard-devkit](https://github.com/AgoraIO-Community/agora-r2-standard-devkit) — BK7259 reference firmware project
+- [agora-esp32-devkit](https://github.com/AgoraIO-Community/agora-esp32-devkit) — ESP32 cross-platform reference project
+- [docs/EMBEDDED.md](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/EMBEDDED.md) ([简体中文](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/EMBEDDED.zh-CN.md)) — footprint, memory,
   thread/stack, timing, power and logging guidance for MCU integrators
-- [docs/RELEASING.md](docs/RELEASING.md) ([简体中文](docs/RELEASING.zh-CN.md)) — release process
-- [CHANGELOG.md](CHANGELOG.md) — version history
+- [docs/RELEASING.md](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/RELEASING.md) ([简体中文](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/RELEASING.zh-CN.md)) — release process
+- [CHANGELOG.md](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/CHANGELOG.md) — version history
 - API reference — generated by Doxygen from the public headers with
   `doxygen build/docs/Doxyfile`; CI builds it on every push / PR and publishes it as an artifact
 
@@ -518,7 +522,7 @@ find include src platforms/linux examples/linux tests -type f \
 ```
 
 - Self-maintained C code follows the root `.clang-format`; `third_party/` keeps upstream content.
-- CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs the build, tests, and format check
+- CI ([.github/workflows/ci.yml](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/.github/workflows/ci.yml)) runs the build, tests, and format check
   on every push / PR; make sure your local commands match CI before merging.
 - CI builds with both GCC and Clang under ASan and UBSan, runs cppcheck and clang-tidy static
   analysis, and publishes gcov/lcov coverage to Codecov.
@@ -534,8 +538,8 @@ find include src platforms/linux examples/linux tests -type f \
 We welcome issues, discussions, and pull requests. Before you start, please read (each document is
 available in English and Simplified Chinese):
 
-- [CONTRIBUTING](CONTRIBUTING.md) ([简体中文](CONTRIBUTING.zh-CN.md)) — development workflow and contribution guidelines
-- [SUPPORT](SUPPORT.md) ([简体中文](SUPPORT.zh-CN.md)) — how to get help
+- [CONTRIBUTING](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/CONTRIBUTING.md) ([简体中文](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/CONTRIBUTING.zh-CN.md)) — development workflow and contribution guidelines
+- [SUPPORT](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/SUPPORT.md) ([简体中文](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/SUPPORT.zh-CN.md)) — how to get help
 
 ## License and third-party dependencies
 
@@ -550,4 +554,4 @@ change the licensing of third-party components:
 - `mybot_json` is derived from cJSON and retains the MIT license notice.
 
 Verify these terms independently before shipping or redistributing a product. See
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for details.
+[THIRD_PARTY_NOTICES.md](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/THIRD_PARTY_NOTICES.md) for details.
