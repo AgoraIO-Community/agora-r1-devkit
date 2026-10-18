@@ -10,6 +10,10 @@ solution revision `438f132542bf3f0bb2f79aee49154d83cd6fdaf9`, preserving agent-s
 the audio lifecycle, device identity implementation, LCD status badges, and regional service
 configuration.
 
+The MyBot SDK `include/` and `src/` snapshot is subsequently updated directly from upstream
+`39d5ed122aab51d90c1c531298c4ead8dc35b104` (version 1.2.0). Its exact source revision and
+archive checksum are recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
+
 The AVDK integration and local AOSL/RTSA inputs preserve the exact pinned source revision
 `a9529f1224747604192b46668471d3473d80050c`. The official bases, local snapshots, and patches
 reproduce these product inputs without depending on either SDK fork during a build.
@@ -145,21 +149,22 @@ Review source and binary differences before accepting new checksums.
 
 ## Validation
 
-Validated on 2026-10-17 using the latest product snapshots described above:
+Validated on 2026-10-18 after refreshing MyBot SDK to `39d5ed1`:
 
 - All 256 source and binary snapshot checksums passed, together with 30 host tests.
+- The upstream `mybot_device_command_test`, `mybot_app_test`, and
+  `mybot_media_pipeline_test` passed for the updated SDK, including wrapped MCP volume commands.
 - A fresh `python3 scripts/build_all.py` completed both AP/CP builds and complete firmware
-  packages: Chinese in 81 seconds, English in 79 seconds, total elapsed time 2 minutes 49 seconds.
+  packages: Chinese in 49 seconds, English in 44 seconds, total elapsed time 1 minute 39 seconds.
 - The generated AP configuration and firmware were checked for the selected language, matching
   regional service endpoint, and exactly one corresponding TLS trust anchor: DigiCert Global
   Root G2 for Chinese and Go Daddy Root Certificate Authority - G2 for English.
-- Repeating `prepare_vendor.py --language en-US` after the builds and running
-  `check_sources.py` succeeded. Both official submodules retained clean tracked working trees,
-  and the source project's English configuration remained unchanged.
+- Both official submodules retained clean tracked working trees, and the source project's
+  English configuration remained unchanged.
 
 | Complete flash image | SHA-256 |
 | --- | --- |
-| `releases/bk7258-zh-CN.bin` | `92a56503f8fbbbc27cf4bd10f44005c0828f5057b49367d38ec8d0b104a29b2c` |
-| `releases/bk7258-en-US.bin` | `8775b9e1157f1fa6c40a636fde0e97c9bb04679541315eb5cfb12949e7bce725` |
+| `releases/bk7258-zh-CN.bin` | `d26e01939f632dae5afede50a3c06478e4bb366c5041126b57fcff18013f2d0b` |
+| `releases/bk7258-en-US.bin` | `2a6aae9d32abb7458af2d3374fe72ffadddef6b443ed704502fa16fb43df51d8` |
 
-Board testing has not been performed for this migration.
+Board testing has not been performed for this SDK refresh.

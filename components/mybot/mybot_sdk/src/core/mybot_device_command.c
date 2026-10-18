@@ -55,62 +55,6 @@ static bool read_integer(const mybot_json_t *value, int minimum, int maximum, in
     return true;
 }
 
-static bool read_action(const mybot_json_t *name, const mybot_json_t *params,
-                        mybot_device_command_t *command) {
-    const mybot_json_t *field[1];
-    if (is_string(name, "audio.set_volume")) {
-        static const char *const names[] = {"level"};
-        command->type = MYBOT_DEVICE_COMMAND_SET_VOLUME;
-        return read_fields(params, names, 1, 1, field) &&
-               read_integer(field[0], 0, 100, &command->params.volume);
-    }
-    if (is_string(name, "audio.adjust_volume")) {
-        static const char *const names[] = {"delta"};
-        command->type = MYBOT_DEVICE_COMMAND_ADJUST_VOLUME;
-        return read_fields(params, names, 1, 1, field) &&
-               read_integer(field[0], -100, 100, &command->params.delta);
-    }
-    if (is_string(name, "audio.set_mute")) {
-        static const char *const names[] = {"muted"};
-        if (!read_fields(params, names, 1, 1, field) ||
-            (field[0]->type != MYBOT_JSON_TRUE && field[0]->type != MYBOT_JSON_FALSE)) {
-            return false;
-        }
-        command->type = MYBOT_DEVICE_COMMAND_SET_MUTE;
-        command->params.muted = field[0]->type == MYBOT_JSON_TRUE;
-        return true;
-    }
-    return false;
-}
-
-static bool read_emotion(const mybot_json_t *name, const mybot_json_t *params,
-                         mybot_device_command_t *command) {
-    static const struct {
-        const char *name;
-        mybot_lcd_indicator_t indicator;
-    } emotions[] = {
-        {"emotion.happy", MYBOT_LCD_INDICATOR_HAPPY},
-        {"emotion.sad", MYBOT_LCD_INDICATOR_SAD},
-        {"emotion.angry", MYBOT_LCD_INDICATOR_ANGRY},
-        {"emotion.surprised", MYBOT_LCD_INDICATOR_SURPRISED},
-    };
-    size_t index = 0;
-    while (index < sizeof(emotions) / sizeof(emotions[0]) &&
-           !is_string(name, emotions[index].name)) {
-        index++;
-    }
-    if (index == sizeof(emotions) / sizeof(emotions[0])) {
-        return false;
-    }
-    /* Current platform presets carry no intensity or duration overrides. */
-    if (!params || params->type != MYBOT_JSON_OBJECT || params->child) {
-        return false;
-    }
-    command->type = MYBOT_DEVICE_COMMAND_EMOTION;
-    command->params.emotion = emotions[index].indicator;
-    return true;
-}
-
 bool mybot_device_command_parse(const mybot_json_t *root, mybot_device_command_t *command) {
     static const char *const names[] = {"type",       "schema",     "version",
                                         "message_id", "command_id", "conversation_id",
@@ -130,12 +74,25 @@ bool mybot_device_command_parse(const mybot_json_t *root, mybot_device_command_t
     }
     static const char *const command_names[] = {"type", "name", "params"};
     const mybot_json_t *command_fields[3];
-    if (!read_fields(fields[6], command_names, 3, 7, command_fields)) {
+    if (!read_fields(fields[6], command_names, 3, 7, command_fields) ||
+        !is_string(command_fields[0], "action")) {
         return false;
     }
-    if (is_string(command_fields[0], "action")) {
-        return read_action(command_fields[1], command_fields[2], command);
+    const char *parameter_name;
+    int minimum;
+    if (is_string(command_fields[1], "audio.set_volume")) {
+        command->type = MYBOT_DEVICE_COMMAND_SET_VOLUME;
+        parameter_name = "level";
+        minimum = 0;
+    } else if (is_string(command_fields[1], "audio.adjust_volume")) {
+        command->type = MYBOT_DEVICE_COMMAND_ADJUST_VOLUME;
+        parameter_name = "delta";
+        minimum = -100;
+    } else {
+        return false;
     }
-    return is_string(command_fields[0], "scene") &&
-           read_emotion(command_fields[1], command_fields[2], command);
+    const char *const parameter_names[] = {parameter_name};
+    const mybot_json_t *parameters[1];
+    return read_fields(command_fields[2], parameter_names, 1, 1, parameters) &&
+           read_integer(parameters[0], minimum, 100, &command->value);
 }

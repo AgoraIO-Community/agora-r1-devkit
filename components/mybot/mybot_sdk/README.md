@@ -71,10 +71,10 @@ RTOS, or a bare-metal MCU.
   conversation RTM channel for the server's `message.sal_status` / `VP_REGISTER_SUCCESS` message
   and exposes `MYBOT_LCD_INDICATOR_VP_REGISTERED` as an in-conversation LCD overlay.
 - **Cloud MCP device commands**: Receive session-bound DeviceCommand v1 messages over RTM to
-  control playback volume/mute and request happy, sad, angry, or surprised LCD expressions.
-  The cloud owns MCP tool invocation; the SDK reuses its media and LCD paths. See the
-  [platform integration guide](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.md)
-  for the general platform contract.
+  set playback volume with `audio.set_volume` or raise/lower it with `audio.adjust_volume`, using
+  the cloud's `message.user` envelope.
+  The cloud owns MCP tool invocation; the SDK reuses its media volume path. Integration is
+  described in [PORTING.md](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.md#mcp-device-commands).
 - **Pairing-code voice prompt**: Once per pair code, plays a fixed prompt ("Please enter the
   pairing code in the console") followed by one sound per digit through the normal speaker path. Assets are raw
   16 kHz mono s16 PCM files under `./assets/locales/<locale>/` (`prompt.pcm`, `0.pcm`..`9.pcm`);

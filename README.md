@@ -83,9 +83,11 @@ This changes source ownership and build integration without upgrading the BK7258
 the RTSA binary with the BK7259 version. See [official dependencies](docs/OFFICIAL_DEPENDENCIES.md)
 for the patch scope and update procedure.
 
-The project, agent-studio-device-firmware SDK, AOSL, and RTSA inputs preserve main revision `04c8283` and its pinned
+The project, BK725x adapters, AOSL, and RTSA inputs preserve main revision `04c8283` and its pinned
 Solution `438f1325` and AVDK `a9529f12` snapshots. Their sources and binaries are recorded by
 checksum in `components/mybot/snapshots.json`.
+The mybot SDK `include/` and `src/` snapshot is updated separately to upstream `39d5ed1`
+(version 1.2.0), as recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
 
 The local runtime components build for AP only. `CONFIG_AGORA_IOT_SDK` stays disabled because
 `mybot_aosl` and `mybot_rtsa` provide the runtime used by this project.
@@ -160,7 +162,7 @@ The generated project's `build/bk7258/mybot/package/` directory also contains `a
 `app_pack.rbl` (CP/AP OTA package), and `build_summary.txt` (memory usage report). Individual
 CP and AP images are under `build/bk7258/mybot/bk7258/` and `build/bk7258/mybot/bk7258_ap/`.
 
-Both language builds passed on 2026-10-17; hardware testing remains outstanding. See the
+Both language builds passed on 2026-10-18; hardware testing remains outstanding. See the
 [validation record](docs/OFFICIAL_DEPENDENCIES.md#validation) for checks and firmware hashes.
 
 ## Flash and run
