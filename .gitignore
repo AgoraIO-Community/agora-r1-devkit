@@ -60,7 +60,9 @@ dkms.conf
 # Generated vendor workspaces, firmware, and local build caches
 /build/
 /releases/
-__pycache__/
+
+# Python bytecode caches at any depth
+**/__pycache__/
 *.pyc
 
 # The pinned RTSA archive is a product dependency, not build output
