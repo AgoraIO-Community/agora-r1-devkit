@@ -86,7 +86,7 @@ for the patch scope and update procedure.
 The project, BK725x adapters, AOSL, and RTSA inputs preserve main revision `04c8283` and its pinned
 Solution `438f1325` and AVDK `a9529f12` snapshots. Their sources and binaries are recorded by
 checksum in `components/mybot/snapshots.json`.
-The mybot SDK `include/` and `src/` snapshot is updated separately to upstream `39d5ed1`
+The agent-studio-device-firmware SDK `include/` and `src/` snapshot is updated separately to upstream `39d5ed1`
 (version 1.2.0), as recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
 
 The local runtime components build for AP only. `CONFIG_AGORA_IOT_SDK` stays disabled because

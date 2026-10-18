@@ -10,7 +10,7 @@ solution revision `438f132542bf3f0bb2f79aee49154d83cd6fdaf9`, preserving agent-s
 the audio lifecycle, device identity implementation, LCD status badges, and regional service
 configuration.
 
-The MyBot SDK `include/` and `src/` snapshot is subsequently updated directly from upstream
+The agent-studio-device-firmware SDK `include/` and `src/` snapshot is subsequently updated directly from upstream
 `39d5ed122aab51d90c1c531298c4ead8dc35b104` (version 1.2.0). Its exact source revision and
 archive checksum are recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
 
@@ -149,7 +149,7 @@ Review source and binary differences before accepting new checksums.
 
 ## Validation
 
-Validated on 2026-10-18 after refreshing MyBot SDK to `39d5ed1`:
+Validated on 2026-10-18 after refreshing agent-studio-device-firmware SDK to `39d5ed1`:
 
 - All 256 source and binary snapshot checksums passed, together with 30 host tests.
 - The upstream `mybot_device_command_test`, `mybot_app_test`, and

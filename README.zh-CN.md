@@ -78,7 +78,7 @@ BK7258 固件采用 AP/CP 双核结构：
 工程、BK725x 平台适配、AOSL 和 RTSA 输入保留主仓迁移基线 `04c8283` 及其固定的 Solution
 `438f1325`、AVDK `a9529f12` 快照。源码和二进制的校验和记录于
 `components/mybot/snapshots.json`。
-mybot SDK 的 `include/`、`src/` 快照单独更新至上游 `39d5ed1`（版本 1.2.0），
+agent-studio-device-firmware SDK 的 `include/`、`src/` 快照单独更新至上游 `39d5ed1`（版本 1.2.0），
 详见 `components/mybot/mybot_sdk/SDK_REVISION`。
 
 本地运行时组件只在 AP 目标编译；`mybot_aosl` 和 `mybot_rtsa` 提供工程所需的运行时，
