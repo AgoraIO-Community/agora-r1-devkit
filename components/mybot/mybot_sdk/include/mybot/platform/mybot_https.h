@@ -1,0 +1,81 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+#ifndef MYBOT_HTTPS_H_
+#define MYBOT_HTTPS_H_
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* ----------------------------------------------------------
+ * Platform HTTPS transport operations (hook interface)
+ *
+ * The SDK provides the HTTP protocol implementation. The platform supplies
+ * the TLS stream used for HTTPS requests and owns each connection handle.
+ * ---------------------------------------------------------- */
+
+/**
+ * TLS stream operations used by the built-in HTTPS client.
+ *
+ * The implementation wraps the platform TLS stack (e.g. mbedTLS, BearSSL or a
+ * chipset TLS socket API). The SDK core does not link OpenSSL.
+ *
+ * @note Control requests and background device-service requests may run concurrently
+ *       on separate SDK workers. Each connect() must create an independent connection
+ *       context, and operations on different connections must support concurrent calls.
+ *       The SDK calls send(), recv(), and close() sequentially for each connection;
+ *       the implementation need not support concurrent operations on the same handle.
+ */
+typedef struct {
+    /**
+     * Establish TCP and TLS to the server.
+     *
+     * @param connection [out] TLS connection handle
+     * @param host       NUL-terminated DNS host name
+     * @param port       TCP port in host byte order
+     * @param timeout_ms maximum blocking time for the whole operation
+     * @return 0 on success, -1 on error or timeout
+     *
+     * @note The implementation must validate the server certificate chain, verify host against
+     *       the certificate, and send the DNS host as the TLS SNI name.
+     */
+    int (*connect)(void **connection, const char *host, uint16_t port, int timeout_ms);
+
+    /**
+     * Send bytes over the TLS stream.
+     *
+     * @param connection TLS connection handle from connect()
+     * @param data       bytes to send
+     * @param len        number of bytes to send
+     * @param timeout_ms maximum blocking time for this call
+     * @return positive byte count on progress, -1 on error or timeout
+     */
+    int (*send)(void *connection, const void *data, size_t len, int timeout_ms);
+
+    /**
+     * Receive bytes from the TLS stream.
+     *
+     * @param connection TLS connection handle from connect()
+     * @param data       destination buffer
+     * @param capacity   size of data in bytes
+     * @param timeout_ms maximum blocking time for this call
+     * @return positive byte count on progress, 0 when the peer closes
+     *         cleanly, -1 on error or timeout
+     */
+    int (*recv)(void *connection, void *data, size_t capacity, int timeout_ms);
+
+    /**
+     * Close the TLS connection and release all resources.
+     *
+     * @param connection TLS connection handle from connect()
+     */
+    void (*close)(void *connection);
+} mybot_https_ops_t;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* MYBOT_HTTPS_H_ */

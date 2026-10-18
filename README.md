@@ -9,9 +9,10 @@
 **agora-r1-devkit** is the BK7258 SMP reference implementation of the open-source
 [agent-studio-device-firmware](https://github.com/AgoraIO-Community/agent-studio-device-firmware)
 AI voice conversation SDK. This repository organizes
-the BK7258 SMP SDK, the AI solution, the BK725x platform port, and a buildable dual-core firmware
-project as pinned Git submodules. It is intended to provide reproducible builds, a practical
-platform development baseline, and a shared foundation for community collaboration.
+the official Beken SDK and AI solution as pinned Git submodules. The agora-r1-devkit firmware project,
+platform port, runtime snapshots, and SDK patches are maintained in this repository. It is
+intended to provide reproducible builds, a practical platform development baseline, and a shared
+foundation for community collaboration.
 
 > This project is an actively developed BK7258 reference implementation. Before using it in a
 > production product, complete the board-level adaptation, security review, and stability
@@ -25,6 +26,9 @@ is a cross-platform AI voice conversation SDK for
 edge devices. Its core is written in C99, uses AOSL as its portable runtime, and obtains device
 capabilities such as Wi-Fi, persistent storage, buttons, displays, audio, and network transport
 through platform `ops` interfaces.
+
+The local snapshot uses agent-studio-device-firmware SDK 1.2.0 and retains the latest BK7258 audio
+lifecycle, device identity implementation, and LCD status badges from the source baseline.
 
 This repository does not redefine the upstream SDK. It provides the complete implementation
 required to run the SDK on the BK7258 platform:
@@ -62,20 +66,34 @@ The BK7258 firmware uses an AP/CP dual-core architecture:
 
 ## Repository layout
 
-| Path | Responsibility | Tracking branch |
+| Path | Responsibility | Source |
 | --- | --- | --- |
-| `bk_avdk_smp/` | BK7258 SMP SDK, Agora IoT SDK, AOSL, and platform foundation components | `release/v3.1.1-mybot` |
-| `bk_solution_ai/` | AI solution, SDK snapshot, BK725x platform port, and firmware project | `release/v3.1.1-mybot` |
-| `bk_solution_ai/projects/mybot/` | AP/CP entry points, board configuration, partition table, and prompt assets | From `bk_solution_ai` |
-| `bk_solution_ai/components/mybot/` | SDK core and the `platforms/bk725x` implementation | From `bk_solution_ai` |
+| `bk_avdk_smp/` | BK7258 SMP SDK and platform foundation components | [bekencorp/bk_avdk_smp](https://github.com/bekencorp/bk_avdk_smp) |
+| `bk_solution_ai/` | Official AI solution components | [bekencorp/bk_solution_ai](https://github.com/bekencorp/bk_solution_ai) |
+| `projects/mybot/` | AP/CP entry points, board configuration, partition tables, and prompt assets | This repository |
+| `components/mybot/mybot_sdk/` | agent-studio-device-firmware SDK 1.2.0 and the `platforms/bk725x` implementation | Local source snapshot |
+| `components/mybot/mybot_aosl/` | AOSL runtime and BK7258 adaptation | Local source snapshot |
+| `components/mybot/mybot_rtsa/` | Agora RTSA headers and binary, build `1292388` | Local snapshot |
+| `patches/` | Small patches applied when preparing the SDK | This repository |
+| `scripts/` | Vendor preparation and language-specific firmware builds | This repository |
 
-The gitlinks in the top-level repository pin both submodules to exact commits so that every
-development environment uses the same source revisions. The `branch` values in `.gitmodules`
-are used only when maintainers explicitly update the submodules from their remotes.
+The official SDK baselines are fixed at `d2ded037798530175e5dc5cde6fa1878f5d5ef35`
+(`bk_avdk_smp`) and `5e3ad9e818d3a3962eb45db23fd71b61238db5af` (`bk_solution_ai`).
+This changes source ownership and build integration without upgrading the BK7258 SDK or replacing
+the RTSA binary with the BK7259 version. See [official dependencies](docs/OFFICIAL_DEPENDENCIES.md)
+for the patch scope and update procedure.
+
+The project, agent-studio-device-firmware SDK, AOSL, and RTSA inputs preserve main revision `04c8283` and its pinned
+Solution `438f1325` and AVDK `a9529f12` snapshots. Their sources and binaries are recorded by
+checksum in `components/mybot/snapshots.json`.
+
+The local runtime components build for AP only. `CONFIG_AGORA_IOT_SDK` stays disabled because
+`mybot_aosl` and `mybot_rtsa` provide the runtime used by this project.
 
 ## Requirements
 
 - Git with Git submodule support.
+- Python 3 and GNU Make.
 - A Linux build environment and the cross-compilation toolchain required by `bk_avdk_smp`.
 - A BK7258 development board or compatible hardware using the same peripheral connections.
 - Access to a compatible SDK device service and valid Agora service configuration.
@@ -107,38 +125,48 @@ git submodule status
 
 ## Build the firmware
 
-`bk_avdk_smp` and `bk_solution_ai` must remain sibling directories. Run the following commands
-from the repository root:
+Run the following command from the repository root to build both language versions:
 
 ```bash
-make -C bk_solution_ai/projects/mybot clean SDK_DIR="$PWD/bk_avdk_smp"
-make -C bk_solution_ai/projects/mybot bk7258 SDK_DIR="$PWD/bk_avdk_smp"
+python3 scripts/build_all.py
 ```
 
-To build Chinese and English firmware separately, run `python3 scripts/build_all.py`.
-The images are published as `releases/bk7258-zh-CN.bin` and
-`releases/bk7258-en-US.bin`. Use `--language zh-CN` or `--language en-US` to
-build one language. `--dry-run`, `--no-clean`, `--build-root`, and
-`--output-root` are also supported. Each variant has an isolated AP/CP build;
-the original project configuration and build directory are left intact. The
-images are published only after all requested builds succeed.
+`--language both` is the default. To build one version:
 
-Build outputs are written to `bk_solution_ai/projects/mybot/build/bk7258/mybot/package/`:
+```bash
+python3 scripts/build_all.py --language zh-CN
+python3 scripts/build_all.py --language en-US
+```
+
+The build prepares separate project copies for each language, applies the repository's SDK
+patches, and builds the CP and AP firmware. It keeps tracked files in the official submodules
+clean and leaves the source project configuration unchanged. The complete flash images are:
 
 | File | Purpose |
 | --- | --- |
-| `all-app.bin` | Complete flash image containing the bootloader, CP, and AP firmware |
-| `app_pack.rbl` | OTA package containing both the CP and AP firmware |
-| `build_summary.txt` | Flash, SRAM, ITCM, and DTCM usage report |
+| `releases/bk7258-zh-CN.bin` | Chinese firmware containing the bootloader, CP, and AP |
+| `releases/bk7258-en-US.bin` | English firmware containing the bootloader, CP, and AP |
 
-The individual CP and AP binaries are written to:
+The script also supports `--dry-run`, `--no-clean`, `--build-root`, and `--output-root`.
+Images are published only after all requested builds succeed.
 
-- `bk_solution_ai/projects/mybot/build/bk7258/mybot/bk7258/app.bin`
-- `bk_solution_ai/projects/mybot/build/bk7258/mybot/bk7258_ap/app.bin`
+For manual builds, prepare one language and run the Make command printed by the script:
+
+```bash
+python3 scripts/prepare_vendor.py --language en-US
+```
+
+The generated project's `build/bk7258/mybot/package/` directory also contains `all-app.bin`,
+`app_pack.rbl` (CP/AP OTA package), and `build_summary.txt` (memory usage report). Individual
+CP and AP images are under `build/bk7258/mybot/bk7258/` and `build/bk7258/mybot/bk7258_ap/`.
+
+Both language builds passed on 2026-10-17; hardware testing remains outstanding. See the
+[validation record](docs/OFFICIAL_DEPENDENCIES.md#validation) for checks and firmware hashes.
 
 ## Flash and run
 
-Use the Beken flashing tool to write `all-app.bin` to the device. Follow the instructions for the
+Use the Beken flashing tool to write the desired `releases/bk7258-*.bin` image to the device.
+These files are copies of the corresponding complete `all-app.bin` images. Follow the instructions for the
 target development board and the
 [Beken flashing documentation](https://docs.bekencorp.com/arminodoc/bk_avdk_smp/smp_doc/bk7258/en/v3.1.1/get-started/index.html).
 
@@ -169,10 +197,10 @@ Porting to different BK7258 hardware requires corresponding configuration and pl
 
 The primary project configuration files are:
 
-- AP: `bk_solution_ai/projects/mybot/ap/config/bk7258_ap/config`
-- CP: `bk_solution_ai/projects/mybot/cp/config/bk7258/config`
-- Flash partitions: `bk_solution_ai/projects/mybot/partitions/bk7258/auto_partitions.csv`
-- SRAM/PSRAM layout: `bk_solution_ai/projects/mybot/partitions/bk7258/ram_regions.csv`
+- AP: `projects/mybot/ap/config/bk7258_ap/config`
+- CP: `projects/mybot/cp/config/bk7258/config`
+- Flash partitions: `projects/mybot/partitions/bk7258/auto_partitions.csv`
+- SRAM/PSRAM layout: `projects/mybot/partitions/bk7258/ram_regions.csv`
 
 The firmware project Kconfig currently provides:
 
@@ -181,7 +209,9 @@ The firmware project Kconfig currently provides:
 - `CONFIG_MYBOT_DEBUG_CPU`: Periodically print CPU usage diagnostics; disabled by default.
 
 The language option selects both the service region and the prompt asset directory. Exactly one of
-the two language options must be enabled.
+the two language options must be enabled. The source configuration retains its English selection;
+the build scripts set the requested language in each generated project copy. Camera and video
+variants are not part of these build commands.
 
 | Firmware language | Device-service region | Device-service base URL | TLS root certificate |
 | --- | --- | --- | --- |
@@ -193,7 +223,7 @@ Each firmware compiles only the root certificate for its region.
 
 ## Embedded voice assets
 
-Prompt assets are stored under `bk_solution_ai/projects/mybot/assets/locales/` as 16 kHz mono
+Prompt assets are stored under `projects/mybot/assets/locales/` as 16 kHz mono
 Opus-in-Ogg files. They are compiled into the AP firmware as read-only C arrays, require no SD
 card, and use no separate `assets_data` partition. Decoded PCM buffers are allocated from PSRAM
 at runtime.
@@ -201,13 +231,18 @@ at runtime.
 After modifying or adding an OGG file, regenerate the C arrays manually before building:
 
 ```bash
-python3 bk_solution_ai/projects/mybot/scripts/generate_assets_c.py \
-  bk_solution_ai/projects/mybot/assets \
-  bk_solution_ai/components/mybot/platforms/bk725x/modules/storage/mybot_assets.c
+python3 projects/mybot/scripts/generate_assets_c.py \
+  projects/mybot/assets \
+  components/mybot/mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.c
 ```
 
+Intentional source or asset changes require reviewing the changed source, including generated
+`mybot_assets.c`, and updating the matching SHA-256 entries in `components/mybot/snapshots.json`.
+Use `sha256sum` to calculate the reviewed files' hashes. Builds verify this manifest and do not
+silently regenerate it.
+
 The generator collects only `locales/**/*.ogg`. See
-[`projects/mybot/assets/README.md`](bk_solution_ai/projects/mybot/assets/README.md) for the audio
+[`projects/mybot/assets/README.md`](projects/mybot/assets/README.md) for the audio
 format and update procedure.
 
 ## Submodule version management
@@ -220,16 +255,12 @@ git submodule sync --recursive
 git submodule update --init --recursive
 ```
 
-Maintainers can explicitly update both configured submodule branches with:
-
-```bash
-git submodule update --remote --checkout bk_avdk_smp bk_solution_ai
-git diff --submodule=log
-```
-
-After an update, build and validate both submodules before updating the gitlinks in the top-level
-repository. Do not commit `build/`, `__pycache__/`, or other locally generated files from a
-submodule.
+Do not use `git submodule update --remote` for routine setup or builds. An SDK update is a separate
+change: choose official commits, check the local patches and runtime integration, build both
+languages, and validate on hardware before updating the gitlinks. Product changes belong in
+`projects/mybot/` and `components/mybot/`; SDK changes belong in reviewed patches under `patches/`.
+Do not commit generated vendor trees, `build/`, or `__pycache__/` directories. See
+[official dependencies](docs/OFFICIAL_DEPENDENCIES.md).
 
 ## Documentation
 
@@ -237,7 +268,8 @@ submodule.
 - [agent-studio-device-firmware English documentation](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/README.md)
 - [agent-studio-device-firmware porting guide](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.md)
 - [agent-studio-device-firmware embedded integration guide](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/EMBEDDED.md)
-- [BK7258 platform component notes](bk_solution_ai/components/mybot/README.md)
+- [BK7258 platform component notes](components/mybot/mybot_sdk/README.md)
+- [Official dependencies and local patches](docs/OFFICIAL_DEPENDENCIES.md)
 
 ## Contributing
 
@@ -245,10 +277,9 @@ Issues and pull requests are welcome:
 
 - Submit platform-independent SDK features and public API changes to the
   [upstream agent-studio-device-firmware project](https://github.com/AgoraIO-Community/agent-studio-device-firmware).
-- Submit BK7258 platform or firmware changes to
-  [bk_solution_ai](https://github.com/junlon2006/bk_solution_ai) or
-  [bk_avdk_smp](https://github.com/junlon2006/bk_avdk_smp), then update the corresponding submodule
-  pointer in this repository.
+- Submit BK7258 platform and firmware changes to this repository. Keep product code in the local
+  project and components, and keep required official SDK changes as small patches. General SDK
+  fixes can also be proposed to [Beken](https://github.com/bekencorp).
 - Report integration, build, and documentation issues in
   [agora-r1-devkit Issues](https://github.com/AgoraIO-Community/agora-r1-devkit/issues).
 
@@ -265,9 +296,9 @@ terms of use, including but not limited to:
 
 - [bk_avdk_smp license](bk_avdk_smp/LICENSE)
 - [bk_solution_ai license](bk_solution_ai/LICENSE)
-- [agent-studio-device-firmware SDK license](bk_solution_ai/components/mybot/LICENSE)
-- [AOSL license and additional terms](bk_avdk_smp/ap/components/bk_thirdparty/agora-iot-sdk/hal/aosl/LICENSE)
-- [Prompt asset license](bk_solution_ai/projects/mybot/assets/LICENSE.xiaozhi-esp32)
+- [agent-studio-device-firmware SDK license](components/mybot/mybot_sdk/LICENSE)
+- [AOSL license and additional terms](components/mybot/mybot_aosl/aosl/LICENSE)
+- [Prompt asset license](projects/mybot/assets/LICENSE.xiaozhi-esp32)
 - [agent-studio-device-firmware third-party notices](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/THIRD_PARTY_NOTICES.md)
 
 Prebuilt binaries such as Agora RTSA may be subject to evaluation periods, redistribution

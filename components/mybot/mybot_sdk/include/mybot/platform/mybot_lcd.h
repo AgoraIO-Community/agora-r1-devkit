@@ -1,0 +1,174 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+#ifndef MYBOT_LCD_H_
+#define MYBOT_LCD_H_
+
+#include <stdbool.h>
+#include <stdint.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* ----------------------------------------------------------
+ * Platform LCD operations (hook interface)
+ *
+ * The SDK provides semantic workflow content. Each platform owns
+ * the concrete layout, fonts, icons, and QR-code presentation.
+ * ---------------------------------------------------------- */
+
+/**
+ * Maximum length of the pairing code buffer, including the NUL terminator.
+ */
+#define MYBOT_LCD_PAIR_CODE_CAPACITY 16
+
+/**
+ * Indicators that may be overlaid on a workflow screen.
+ *
+ * Indicators are represented as a bitmask in mybot_lcd_content_t. Platforms
+ * should ignore bits they do not recognize and must not change the base screen
+ * layout when no supported indicator is set. Server states are mutually exclusive;
+ * emotions are mutually exclusive, one-shot expression commands.
+ */
+typedef enum {
+    /** No additional indicator. */
+    MYBOT_LCD_INDICATOR_NONE = 0u,
+    /** Voice-print registration completed for the active conversation. */
+    MYBOT_LCD_INDICATOR_VP_REGISTERED = 1u << 0,
+    /** The server is listening for user input. */
+    MYBOT_LCD_INDICATOR_LISTENING = 1u << 1,
+    /** The server is processing user input. */
+    MYBOT_LCD_INDICATOR_THINKING = 1u << 2,
+    /** The server is speaking to the user. */
+    MYBOT_LCD_INDICATOR_SPEAKING = 1u << 3,
+    /** Display a happy expression. */
+    MYBOT_LCD_INDICATOR_HAPPY = 1u << 4,
+    /** Display a sad expression. */
+    MYBOT_LCD_INDICATOR_SAD = 1u << 5,
+    /** Display an angry expression. */
+    MYBOT_LCD_INDICATOR_ANGRY = 1u << 6,
+    /** Display a surprised expression. */
+    MYBOT_LCD_INDICATOR_SURPRISED = 1u << 7,
+} mybot_lcd_indicator_t;
+
+/**
+ * Mask of the mutually exclusive server-state indicators.
+ */
+#define MYBOT_LCD_INDICATOR_SERVER_STATE_MASK                                                      \
+    (MYBOT_LCD_INDICATOR_LISTENING | MYBOT_LCD_INDICATOR_THINKING | MYBOT_LCD_INDICATOR_SPEAKING)
+
+/**
+ * Mask of the mutually exclusive, one-shot emotion indicators.
+ */
+#define MYBOT_LCD_INDICATOR_EMOTION_MASK                                                           \
+    (MYBOT_LCD_INDICATOR_HAPPY | MYBOT_LCD_INDICATOR_SAD | MYBOT_LCD_INDICATOR_ANGRY |             \
+     MYBOT_LCD_INDICATOR_SURPRISED)
+
+/**
+ * Workflow screens rendered by the SDK.
+ *
+ * The LCD implementation receives these as semantic content and decides the concrete
+ * layout, fonts, icons or QR-code presentation itself.
+ */
+typedef enum {
+    /** The device is powering up. */
+    MYBOT_LCD_SCREEN_STARTING = 0,
+    /** Waiting for initial usable network notification; the SDK does not run provisioning. */
+    MYBOT_LCD_SCREEN_WIFI_PROVISIONING,
+    /** The Wi-Fi link was lost at runtime. */
+    MYBOT_LCD_SCREEN_WIFI_DISCONNECTED,
+    /** Wi-Fi is up and the remaining services are starting. */
+    MYBOT_LCD_SCREEN_STARTING_SERVICES,
+    /** The device is waiting for the pairing flow to complete. */
+    MYBOT_LCD_SCREEN_PAIRING,
+    /** The pairing screen with a server-provided pairing code. */
+    MYBOT_LCD_SCREEN_PAIR_CODE,
+    /** All services are up; the device is ready. */
+    MYBOT_LCD_SCREEN_READY,
+    /** A conversation is active. */
+    MYBOT_LCD_SCREEN_IN_CONVERSATION,
+    /** Startup failed unrecoverably. */
+    MYBOT_LCD_SCREEN_FAILED,
+    /** The application is shutting down. */
+    MYBOT_LCD_SCREEN_STOPPING,
+    /** Sentinel; not a valid screen value. */
+    MYBOT_LCD_SCREEN_COUNT,
+} mybot_lcd_screen_t;
+
+/**
+ * Semantic content passed to the LCD render() callback.
+ */
+typedef struct {
+    /** The screen to render. */
+    mybot_lcd_screen_t screen;
+    /**
+     * Pairing code; valid and NUL-terminated only when
+     * screen == MYBOT_LCD_SCREEN_PAIR_CODE.
+     */
+    char pair_code[MYBOT_LCD_PAIR_CODE_CAPACITY];
+    /**
+     * Optional screen indicators, meaningful on MYBOT_LCD_SCREEN_IN_CONVERSATION.
+     * Other screens should
+     * normally be rendered with MYBOT_LCD_INDICATOR_NONE. The listening,
+     * thinking and speaking bits are mutually exclusive server-state overlays.
+     * Each render call containing an emotion bit triggers a new expression,
+     * including consecutive calls with the same bit.
+     * Ordinary renders without an emotion bit update the retained overlays and
+     * must not restart or cancel the platform's current expression.
+     *
+     * @note The field is appended to the 1.1.0 content structure. Build the
+     *       SDK and platform LCD adapter against the same public header.
+     */
+    uint32_t indicators;
+} mybot_lcd_content_t;
+
+/**
+ * Platform LCD operations.
+ *
+ * render() receives semantic content so each platform can choose its own
+ * layout, fonts, icons, or QR-code presentation. The content pointer is valid
+ * only for the duration of the call and must not be retained by the implementation.
+ * Copy any content needed by asynchronous display tasks before returning.
+ *
+ * @note render() is called by the application control owner. The SDK does not
+ *       invoke render() concurrently.
+ */
+typedef struct {
+    /**
+     * Allocate and open the display.
+     *
+     * @param ctx [out] LCD implementation context handle
+     * @return 0 on success, -1 on error
+     */
+    int (*init)(void **ctx);
+
+    /**
+     * Render one workflow screen.
+     *
+     * Submit emotion commands quickly; expression duration and animation timing
+     * belong to the platform. A new emotion replaces the unfinished expression.
+     * Rendering a screen other than MYBOT_LCD_SCREEN_IN_CONVERSATION must cancel
+     * any current expression. The SDK does not retry a failed emotion render or
+     * replay it on a later ordinary render.
+     *
+     * @param ctx     LCD implementation context from init()
+     * @param content semantic screen content; borrowed for the duration of
+     *                 the call
+     * @return 0 on success, -1 on error
+     */
+    int (*render)(void *ctx, const mybot_lcd_content_t *content);
+
+    /**
+     * Release the display.
+     *
+     * Called by the application control owner after all render calls have stopped.
+     * Cancel and wait for any asynchronous display work before releasing the context.
+     *
+     * @param ctx LCD implementation context from init()
+     */
+    void (*destroy)(void *ctx);
+} mybot_lcd_ops_t;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* MYBOT_LCD_H_ */
