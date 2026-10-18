@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "repositories": {
+    "bk_avdk_smp": {
+      "url": "https://github.com/bekencorp/bk_avdk_smp.git",
+      "commit": "d2ded037798530175e5dc5cde6fa1878f5d5ef35",
+      "patches": [
+        {
+          "path": "patches/bk_avdk_smp/0001-captive-portal-dns.patch",
+          "sha256": "7ff1bd73dc1ca80e87a90f519719c8e7596ab38f8a87e0eb5560dbdfdbda999f"
+        },
+        {
+          "path": "patches/bk_avdk_smp/0002-spi-display-completion.patch",
+          "sha256": "cfa5e19ebe6803b2577af3a7a270683dbb5564caea9c3997eb4169fcb7d3d014"
+        }
+      ]
+    },
+    "bk_solution_ai": {
+      "url": "https://github.com/bekencorp/bk_solution_ai.git",
+      "commit": "5e3ad9e818d3a3962eb45db23fd71b61238db5af",
+      "patches": []
+    }
+  }
+}

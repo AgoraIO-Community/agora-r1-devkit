@@ -1,0 +1,36 @@
+diff --git a/ap/components/bk_display/src/spi/bk_display_spi_ctlr.c b/ap/components/bk_display/src/spi/bk_display_spi_ctlr.c
+index 8a0a6527d..39ccc8314 100755
+--- a/ap/components/bk_display/src/spi/bk_display_spi_ctlr.c
++++ b/ap/components/bk_display/src/spi/bk_display_spi_ctlr.c
+@@ -13,6 +13,8 @@
+ #define LOGD(...) BK_LOGD(TAG, ##__VA_ARGS__)
+ #define LOGV(...) BK_LOGV(TAG, ##__VA_ARGS__)
+ 
++#define LCD_SPI_FRAME_COMPLETE_TIMEOUT_MS 1
++
+ typedef enum {
+     LCD_SPI_DISP_REQUEST = 0,
+     LCD_SPI_DISP_EXIT,
+@@ -59,7 +61,14 @@ static void lcd_spi_display_task_entry(beken_thread_arg_t arg)
+     while (context->disp_task_running)
+     {
+         lcd_spi_display_msg_t msg;
+-        int ret = rtos_pop_from_queue(&context->queue, &msg, BEKEN_WAIT_FOREVER);
++        uint32_t wait_ms = BEKEN_WAIT_FOREVER;
++        #if (CONFIG_LCD_SPI_REFRESH_WITH_QSPI_MAPPING_MODE)
++        /* A mapping-mode transfer keeps CS asserted until wait_display_complete(). */
++        if (context->lcd_display_flag) {
++            wait_ms = LCD_SPI_FRAME_COMPLETE_TIMEOUT_MS;
++        }
++        #endif
++        int ret = rtos_pop_from_queue(&context->queue, &msg, wait_ms);
+         if (ret == BK_OK) {
+             switch (msg.event) {
+                 case LCD_SPI_DISP_REQUEST:
+@@ -303,4 +312,4 @@ avdk_err_t bk_display_spi_ctlr_new(bk_display_ctlr_handle_t *handle, bk_display_
+     *handle = &(controller->ops);
+ 
+     return AVDK_ERR_OK;
+-}
+\ No newline at end of file
++}

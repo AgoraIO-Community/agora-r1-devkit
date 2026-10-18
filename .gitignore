@@ -57,7 +57,13 @@ dkms.conf
 # Local Codex development skills
 /skills/
 
-# Isolated bilingual firmware builds and published images.
+# Generated vendor workspaces, firmware, and local build caches
 /build/
 /releases/
-/scripts/__pycache__/
+
+# Python bytecode caches at any depth
+**/__pycache__/
+*.pyc
+
+# The pinned RTSA archive is a product dependency, not build output
+!/components/mybot/mybot_rtsa/lib/arm/libagora-rtc-sdk.a

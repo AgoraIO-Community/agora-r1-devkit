@@ -1,0 +1,14 @@
+repository=https://github.com/junlon2006/mybot.git
+ref=refs/heads/main
+commit=39d5ed122aab51d90c1c531298c4ead8dc35b104
+version=1.2.0
+include_tree=9ee3a8bd4f85a9b211c68e2a4edcb466fb6580b2
+src_tree=9448fb619a849389677a63eb8974789f6a0d68bb
+archive_sha256=c7904edb0872c6f5e5e35feeacd5bcd06a0ac7ece933e56ee5ea8acf7de86530
+
+# include/ and src/ match the upstream commit byte-for-byte, except for
+# include/mybot/mybot_version.h, generated from the upstream .h.in template
+# using the version values in the upstream CMakeLists.txt.
+# archive_sha256 covers: git archive <commit> include src
+# platforms/bk725x/ and CMakeLists.txt belong to the BK7258 integration.
+# Optional video uplink remains disabled (MYBOT_ENABLE_VIDEO=0).
