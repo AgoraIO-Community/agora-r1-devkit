@@ -73,9 +73,11 @@ BK7258 固件采用 AP/CP 双核结构：
 本次迁移调整源码归属和构建集成，不升级 BK7258 SDK，也不替换为 BK7259 的 RTSA
 二进制。补丁范围和版本更新方式见[官方依赖说明](docs/OFFICIAL_DEPENDENCIES.md)。
 
-工程、mybot SDK、AOSL 和 RTSA 输入保留主仓最新提交 `04c8283` 及其固定的 Solution
+工程、BK725x 平台适配、AOSL 和 RTSA 输入保留主仓迁移基线 `04c8283` 及其固定的 Solution
 `438f1325`、AVDK `a9529f12` 快照。源码和二进制的校验和记录于
 `components/mybot/snapshots.json`。
+mybot SDK 的 `include/`、`src/` 快照单独更新至上游 `39d5ed1`（版本 1.2.0），
+详见 `components/mybot/mybot_sdk/SDK_REVISION`。
 
 本地运行时组件只在 AP 目标编译；`mybot_aosl` 和 `mybot_rtsa` 提供工程所需的运行时，
 因此保持 `CONFIG_AGORA_IOT_SDK` 关闭。
@@ -149,7 +151,7 @@ python3 scripts/prepare_vendor.py --language en-US
 `app_pack.rbl` 和内存报告 `build_summary.txt`。CP、AP 独立镜像分别位于生成工程的
 `build/bk7258/mybot/bk7258/` 和 `build/bk7258/mybot/bk7258_ap/`。
 
-2026-10-17 已完成中英文两个版本的构建验证，尚未进行板端测试。
+2026-10-18 已完成中英文两个版本的构建验证，尚未进行板端测试。
 检查内容与固件哈希见[验证记录](docs/OFFICIAL_DEPENDENCIES.md#validation)。
 
 ## 烧录与运行

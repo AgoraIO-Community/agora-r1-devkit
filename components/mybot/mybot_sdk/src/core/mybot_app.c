@@ -276,23 +276,11 @@ static void handle_device_command(const aosl_ts_t *ts, aosl_refobj_t ref, uintpt
     if (!remember_command(runtime, command)) {
         goto done;
     }
-    int ret = 0;
-    switch (command->type) {
-    case MYBOT_DEVICE_COMMAND_SET_VOLUME:
-        ret = mybot_media_pipeline_set_volume(&runtime->media, command->params.volume);
-        break;
-    case MYBOT_DEVICE_COMMAND_ADJUST_VOLUME:
-        ret = mybot_media_pipeline_adjust_volume(&runtime->media, command->params.delta);
-        break;
-    case MYBOT_DEVICE_COMMAND_SET_MUTE:
-        mybot_media_pipeline_set_muted(&runtime->media, command->params.muted);
-        break;
-    case MYBOT_DEVICE_COMMAND_EMOTION:
-        ret = mybot_presenter_show_emotion(&runtime->presenter, command->params.emotion);
-        break;
-    }
-    if (ret < 0) {
-        AOSL_LOG_WRN("[RTM] device command execution failed (type=%d)", (int)command->type);
+    int result = command->type == MYBOT_DEVICE_COMMAND_ADJUST_VOLUME
+                     ? mybot_media_pipeline_adjust_volume(&runtime->media, command->value)
+                     : mybot_media_pipeline_set_volume(&runtime->media, command->value);
+    if (result < 0) {
+        AOSL_LOG_WRN("[RTM] volume command execution failed");
     }
 done:
     aosl_hal_free(event);
@@ -340,6 +328,35 @@ static bool rtm_json_contains_nul(const char *message) {
     return false;
 }
 
+/* Decode one known cloud envelope; metadata does not replace command/session IDs. */
+static mybot_json_t *parse_message_user_content(const mybot_json_t *root) {
+    static const char *const names[] = {"object", "data_type", "content"};
+    const mybot_json_t *fields[3] = {NULL};
+    if (!root || root->type != MYBOT_JSON_OBJECT) {
+        return NULL;
+    }
+    for (const mybot_json_t *item = root->child; item; item = item->next) {
+        for (size_t index = 0; index < sizeof(fields) / sizeof(fields[0]); ++index) {
+            if (item->string && strcmp(item->string, names[index]) == 0) {
+                if (fields[index]) {
+                    return NULL;
+                }
+                fields[index] = item;
+                break;
+            }
+        }
+    }
+    const char *object = mybot_json_get_string(fields[0]);
+    const char *data_type = mybot_json_get_string(fields[1]);
+    const char *content = mybot_json_get_string(fields[2]);
+    if (!object || strcmp(object, "message.user") != 0 || !data_type ||
+        strcmp(data_type, "message") != 0 || !content || !content[0] ||
+        rtm_json_contains_nul(content)) {
+        return NULL;
+    }
+    return mybot_json_parse(content);
+}
+
 static void process_application_rtm_data(mybot_runtime_t *runtime, const char *channel,
                                          const char *sender, const void *data, size_t len) {
     if (!data || len == 0 || len > RTM_MESSAGE_MAX_BYTES || memchr(data, '\0', len)) {
@@ -355,11 +372,15 @@ static void process_application_rtm_data(mybot_runtime_t *runtime, const char *c
     memcpy(message, data, len);
     message[len] = '\0';
     mybot_json_t *root = rtm_json_contains_nul(message) ? NULL : mybot_json_parse(message);
-    const char *type = mybot_json_get_string(json_get_exact_object_item(root, "type"));
-    const char *schema = mybot_json_get_string(json_get_exact_object_item(root, "schema"));
-    if ((type && strcmp(type, "device_command") == 0) ||
-        (schema && strcmp(schema, "botstation.device-command") == 0)) {
-        queue_device_command(runtime, channel, sender, root, generation);
+    const char *object = mybot_json_get_string(json_get_exact_object_item(root, "object"));
+    mybot_json_t *content_root = NULL;
+    if (object && strcmp(object, "message.user") == 0) {
+        content_root = parse_message_user_content(root);
+        if (content_root) {
+            queue_device_command(runtime, channel, sender, content_root, generation);
+        } else {
+            AOSL_LOG_WRN("[RTM] invalid message.user command envelope");
+        }
     } else {
         mybot_lcd_indicator_t indicator;
         bool active;
@@ -369,6 +390,7 @@ static void process_application_rtm_data(mybot_runtime_t *runtime, const char *c
             AOSL_LOG_DBG("[RTM] application data not handled: no matching message type");
         }
     }
+    mybot_json_delete(content_root);
     mybot_json_delete(root);
     aosl_hal_free(message);
 }

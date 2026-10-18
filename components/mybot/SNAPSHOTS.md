@@ -1,11 +1,11 @@
-The immutable source files in `snapshots.json` were copied without modification
-from the BK7258 integration used before the official vendor migration:
+The managed runtime files in `snapshots.json` retain the following provenance:
 
-* MyBot SDK: `https://github.com/junlon2006/bk_solution_ai.git`, commit
+* BK7258 MyBot integration: `https://github.com/junlon2006/bk_solution_ai.git`, commit
   `438f132542bf3f0bb2f79aee49154d83cd6fdaf9`, `components/mybot`.
-  The SDK is version `1.2.0`, synchronized from
+  Its platform code retains this baseline. The SDK `include/` and `src/` snapshots
+  are version `1.2.0`, synchronized directly from
   `https://github.com/junlon2006/mybot.git` commit
-  `e7793eba88f721304dc00d421706d4d788b81a43`; see `mybot_sdk/SDK_REVISION`.
+  `39d5ed122aab51d90c1c531298c4ead8dc35b104`; see `mybot_sdk/SDK_REVISION`.
 * AOSL and the BK725x HAL: `https://github.com/junlon2006/bk_avdk_smp.git`, commit
   `a9529f1224747604192b46668471d3473d80050c`,
   `ap/components/bk_thirdparty/agora-iot-sdk/hal/aosl`.
