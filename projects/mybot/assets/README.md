@@ -12,7 +12,7 @@
 ## 音频格式
 
 所有音频为 **Opus-in-Ogg**：由 16 kHz 单声道 s16le 源经
-`scripts/convert_pcm_to_ogg.sh` 编码（libopus 24 kbps VBR、`-application voip`），
+`projects/mybot/scripts/convert_pcm_to_ogg.sh` 编码（libopus 24 kbps VBR、`-application voip`），
 设备侧由 `mybot_ogg_pcm_bk725x.c` 解码为 16 kHz 单声道 PCM。解码器依赖 OpusHead
 （mono、pre_skip 裁剪）与结尾 granule position，因此始终使用脚本转换，不要手工
 指定其它编码参数。
@@ -30,9 +30,11 @@ Linux mybot demo（文档标注为同一 `xiaozhi-esp32` 资源的衍生）。�
 
 ## 修改现有语音
 
+以下命令均从仓库根目录执行。
+
 1. 准备 16 kHz 单声道 s16le PCM 源文件，放到对应 locale 目录下同名
    （如 `prompt.pcm`）。
-2. 运行 `scripts/convert_pcm_to_ogg.sh`，生成或覆盖同名 `.ogg`。
+2. 运行 `bash projects/mybot/scripts/convert_pcm_to_ogg.sh`，生成或覆盖同名 `.ogg`。
 3. 重新生成 C 数组：
 
    ```bash
@@ -41,7 +43,11 @@ Linux mybot demo（文档标注为同一 `xiaozhi-esp32` 资源的衍生）。�
      components/mybot/mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.c
    ```
 
-4. 执行 `make bk7258` 重新编译并烧录。生成的数组会随 AP 固件更新。
+4. 审查生成的 `mybot_assets.c` 差异，再用 `sha256sum` 计算其 SHA-256，更新
+   `components/mybot/snapshots.json` 中对应记录。如同时修改了其他受管源码，
+   也需审查差异并更新对应记录；构建会校验清单。
+5. 按[根 README 的构建说明](../../../README.zh-CN.md#构建固件)重新编译并烧录。
+   生成的数组会随 AP 固件更新。
 
 ## 新增语音
 
@@ -52,7 +58,8 @@ Linux mybot demo（文档标注为同一 `xiaozhi-esp32` 资源的衍生）。�
    - `prompt.ogg` / `0.ogg`~`9.ogg`：
      `components/mybot/mybot_sdk/platforms/bk725x/modules/announce/mybot_announce_pcm_bk725x.c`
      的 `sound_file_name()`（对应 `mybot_announce_sound_t` 枚举）。
-3. 执行 `make bk7258` 并烧录。
+3. 完成上述源码差异审查及校验清单更新后，按
+   [根 README 的构建说明](../../../README.zh-CN.md#构建固件)重新编译并烧录。
 
 ## 固件空间
 
