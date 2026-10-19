@@ -1,22 +1,15 @@
 # BK7258 official dependencies
 
-The BK7258 firmware uses official Beken submodules and keeps product code in the top-level
-repository. Building no longer requires the `junlon2006/bk_avdk_smp` or
-`junlon2006/bk_solution_ai` forks.
+The BK7258 firmware uses official Beken submodules and keeps product code in this repository.
+The BK725x platform and AOSL files match the published
+[R1 snapshot at `0db7814`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/0db7814501093d67cd614944996832c018c31f99/components/mybot).
+The RTSA library is preserved byte-for-byte from that fixed snapshot, as described in
+[snapshot provenance](../components/mybot/SNAPSHOTS.md).
 
-The migration starts from the updated BK7258 main revision
-`04c828300b1a80cfc6e8cca70e98e2cf1d14b99c`. Its product source has been refreshed from the pinned
-solution revision `438f132542bf3f0bb2f79aee49154d83cd6fdaf9`, preserving agent-studio-device-firmware SDK 1.2.0,
-the audio lifecycle, device identity implementation, LCD status badges, and regional service
-configuration.
-
-The agent-studio-device-firmware SDK `include/` and `src/` snapshot is subsequently updated directly from upstream
-`39d5ed122aab51d90c1c531298c4ead8dc35b104` (version 1.2.0). Its exact source revision and
+The SDK `include/` and `src/` match official
+[agent-studio-device-firmware v1.3.0](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/v1.3.0),
+commit `32ac74bc59cb72db70e9a68337753561b59b13d0`. Its official ref, source trees and
 archive checksum are recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
-
-The AVDK integration and local AOSL/RTSA inputs preserve the exact pinned source revision
-`a9529f1224747604192b46668471d3473d80050c`. The official bases, local snapshots, and patches
-reproduce these product inputs without depending on either SDK fork during a build.
 
 ## Fixed SDK baselines
 
@@ -24,10 +17,11 @@ reproduce these product inputs without depending on either SDK fork during a bui
 | --- | --- | --- |
 | `bk_avdk_smp` | <https://github.com/bekencorp/bk_avdk_smp> | `d2ded037798530175e5dc5cde6fa1878f5d5ef35` |
 | `bk_solution_ai` | <https://github.com/bekencorp/bk_solution_ai> | `5e3ad9e818d3a3962eb45db23fd71b61238db5af` |
+| SDK core | <https://github.com/AgoraIO-Community/agent-studio-device-firmware> | `32ac74bc59cb72db70e9a68337753561b59b13d0` (`v1.3.0`) |
 
-These are the official bases of the pinned BK7258 source snapshots. Moving to official
-repositories changes build integration without upgrading the SDK. The top-level gitlinks pin
-the commits; routine setup uses `git submodule update --init --recursive`, without `--remote`.
+The Beken commits pin the platform dependencies; the SDK core is locked independently to its
+official release. The top-level gitlinks pin the Beken commits; routine setup uses
+`git submodule update --init --recursive`, without `--remote`.
 
 `vendor.lock.json` records the official URLs, commits, patch order, and patch SHA-256 checksums.
 Preparation checks it against `.gitmodules`, the checked-out revisions, and tracked working-tree
@@ -38,9 +32,9 @@ changes before creating a build workspace.
 | Path | Content |
 | --- | --- |
 | `projects/mybot/` | AP/CP entry points, board configuration, Flash/RAM layouts, OGG assets, and asset-generation scripts |
-| `components/mybot/mybot_sdk/` | agent-studio-device-firmware SDK 1.2.0 snapshot, BK725x adapters and modules, and embedded prompt arrays |
-| `components/mybot/mybot_aosl/` | BK7258 AOSL runtime snapshot and platform adaptation from the pinned AVDK source |
-| `components/mybot/mybot_rtsa/` | BK7258 Agora RTSA headers and library, build `1292388`, from the pinned AVDK source |
+| `components/mybot/mybot_sdk/` | agent-studio-device-firmware SDK 1.3.0 snapshot, BK725x adapters and modules, and embedded prompt arrays |
+| `components/mybot/mybot_aosl/` | BK7258 AOSL runtime and platform adaptation from the published R1 baseline |
+| `components/mybot/mybot_rtsa/` | BK7258 RTSA header and unchanged library, build `1292388`, from the published R1 baseline |
 
 The integration uses the BK7259 repository's approach of separating official dependencies from
 product code. It retains the BK7258 runtime versions, board configuration, and AP/CP architecture.
@@ -65,9 +59,8 @@ and manifest checksums to identify the actual runtime inputs:
 | `mybot_rtsa/include/agora_rtc_api.h` | — | `29b1c21cbe416ee703eaa197ce623469619b1ed68cd3e9c66cb3abe2fafec7db` |
 | `mybot_rtsa/lib/arm/libagora-rtc-sdk.a` | 9,283,998 bytes | `fb3d08126e14cf2eb99c531390822a591b094537d54abf8df95c5a5f587be8ec` |
 
-The old `bk_solution_ai` fork added the mybot project and component without modifying existing
-official solution components. Those additions now live above, so `bk_solution_ai` needs no local
-patches.
+The product project and components live in this repository. `bk_solution_ai` needs no local
+patches because its existing solution components are used as delivered.
 
 ## SDK patches
 
@@ -149,13 +142,17 @@ Review source and binary differences before accepting new checksums.
 
 ## Validation
 
-Validated on 2026-10-18 after refreshing agent-studio-device-firmware SDK to `39d5ed1`:
+The SDK mapping, all 256 snapshot checksums, and 30 host tests are checked locally.
+The SDK code and prebuilt RTSA library remain unchanged.
+
+The following firmware build results were recorded on 2026-10-19 for the same SDK and
+unchanged RTSA library. The provenance update does not rerun the complete firmware build:
 
 - All 256 source and binary snapshot checksums passed, together with 30 host tests.
-- The upstream `mybot_device_command_test`, `mybot_app_test`, and
-  `mybot_media_pipeline_test` passed for the updated SDK, including wrapped MCP volume commands.
+- The upstream `mybot_http_client_test`, `mybot_json_test`, and
+  `mybot_public_headers_test` passed, including the runtime SDK version check.
 - A fresh `python3 scripts/build_all.py` completed both AP/CP builds and complete firmware
-  packages: Chinese in 49 seconds, English in 44 seconds, total elapsed time 1 minute 39 seconds.
+  packages: Chinese in 39 seconds, English in 39 seconds, total elapsed time 1 minute 19 seconds.
 - The generated AP configuration and firmware were checked for the selected language, matching
   regional service endpoint, and exactly one corresponding TLS trust anchor: DigiCert Global
   Root G2 for Chinese and Go Daddy Root Certificate Authority - G2 for English.
@@ -164,7 +161,7 @@ Validated on 2026-10-18 after refreshing agent-studio-device-firmware SDK to `39
 
 | Complete flash image | SHA-256 |
 | --- | --- |
-| `releases/bk7258-zh-CN.bin` | `d26e01939f632dae5afede50a3c06478e4bb366c5041126b57fcff18013f2d0b` |
-| `releases/bk7258-en-US.bin` | `2a6aae9d32abb7458af2d3374fe72ffadddef6b443ed704502fa16fb43df51d8` |
+| `releases/bk7258-zh-CN.bin` | `266a9c780829fb8b4b173d2a6d860dac6687654bb1a032bc366bae8b1c2cce32` |
+| `releases/bk7258-en-US.bin` | `b92ccc0a09c65b1b40293fec20a617aa05b8462c8a3eca585a16e3c67ec386aa` |
 
 Board testing has not been performed for this SDK refresh.

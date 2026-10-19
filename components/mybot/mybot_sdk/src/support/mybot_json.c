@@ -746,7 +746,7 @@ static const char *parse_object(mybot_json_t *item, const char *value, unsigned 
     item->type = MYBOT_JSON_OBJECT;
     value = skip(value + 1);
     if (*value == '}')
-        return value + 1; /* empty array. */
+        return value + 1; /* empty object. */
 
     item->child = child = mybot_json_new_item();
     if (!item->child)
@@ -787,7 +787,7 @@ static const char *parse_object(mybot_json_t *item, const char *value, unsigned 
     }
 
     if (*value == '}')
-        return value + 1; /* end of array */
+        return value + 1; /* end of object */
     return 0;             /* malformed. */
 }
 
