@@ -1,98 +1,69 @@
 # 1. AOSL Library Introduction
-The aosl library provides an abstract implementation of low-level common components including threads, IO, logging, memory, etc.
-The API header file path for aosl: include/api
+
+The aosl library provides an abstract implementation of low-level common components including
+threads, IO, logging, memory, etc. Its public API headers are in [include/api](include/api/).
+
+This directory is the AOSL snapshot used by [agora-r1-devkit](../../../../README.md). Its BK725x
+HAL and source provenance are recorded in [SNAPSHOTS.md](../../SNAPSHOTS.md); the AOSL licensing
+terms remain in [LICENSE](LICENSE). The public [AOSL upstream project](https://github.com/AgoraIO-Community/aosl)
+provides information about other platform ports.
 
 # 2. Porting Guide
-# 2.1 HAL Layer Definition
-When porting to a chip platform, you only need to focus on the platform directory, where:  
-platform/include/hal:     HAL layer interface definitions  
-platform/src/include/hal: HAL layer configuration  
-platform/src/${platform}: HAL layer implementation code  
 
-# 2.2 HAL Layer Implementation
-Implement the interfaces defined in the header files in platform/include/hal.
-Porting includes atomic, file, iomp, socket, memory, thread, time, etc.
-You can refer to the porting implementation examples of linux and esp32 when porting.
+## 2.1 HAL Layer Definition
+
+The platform directories included in this snapshot are:
+
+- [platform/include/hal](platform/include/hal/): HAL interface definitions.
+- [platform/src/bk725x/config/hal](platform/src/bk725x/config/hal/): BK725x HAL configuration.
+- [platform/src/bk725x](platform/src/bk725x/): BK725x HAL implementation.
+
+## 2.2 HAL Layer Implementation
+
+Implement the interfaces defined in the headers in `platform/include/hal`. Porting includes
+atomic, file, iomp, socket, memory, thread, time, etc. Use the included
+[BK725x HAL](platform/src/bk725x/) as the implementation reference for this firmware.
 
 # 3. Build Guide
-There is a CMakeLists.txt file in the project root directory for building examples.
-CMakeLists.txt defines some build parameters and variables to control script behavior. The default behavior of these parameters is to compile the aosl library for linux. You can set them before using this CMakeLists.txt to adapt to other platforms.
 
-There are two build artifacts for aosl:
-- (1) Static library: libaosl.a
-- (2) Header files: exported "api/", "hal/" header files
+R1 builds AOSL for the BK7258 AP through the parent
+[Armino component wrapper](../CMakeLists.txt). That wrapper selects the preserved source files,
+exports `aosl/include`, `aosl/platform/include`, and `aosl/platform/src/bk725x/config`, and declares
+the required BK components. Follow the [R1 firmware build instructions](../../../../README.md#build-the-firmware)
+for the pinned dependencies and BK toolchain.
 
-# 3.0 Default Build
-You can execute the following commands to compile the aosl artifacts for linux:
-```
-cd aosl
-mkdir build
-cmake ..
-make
-```
-At this point, you can see the libaosl.a static library and the include exported header file directory in the build directory
+The [standalone CMake file](CMakeLists.txt) retains the upstream Linux default, but this snapshot
+contains the BK725x HAL. The current R1 integration uses the Armino wrapper described above.
 
-# 3.1 Porting Build
-# 3.1.1 Build Control Settings
-* Build Options:  
-  - (1) AOSL_DECLARE_PROJECT: (ON/OFF) Whether to build aosl as a standalone project, default ON. If you only want to include aosl as a subdirectory, you can set it to OFF.
+## 3.1 CMake Build Controls
 
-* Build Variables:  
-  - (1) AOSL_DIR: Root directory of the aosl library, if not set, it defaults to CMAKE_CURRENT_SOURCE_DIR
-  - (2) CONFIG_PLATFORM: Name of the target platform to port, such as linux, esp32, default is linux
+For integrations based on the standalone CMake file, the existing controls are:
 
-There are two ways to set parameters:
-- (1) Specify through cmake command parameters, for example:
-```
-cmake -DCONFIG_PLATFORM=esp32 \
-      -DAOSL_DECLARE_PROJECT=OFF
-```
-- (2) Set parameters before include, for example:
-```
-set(AOSL_DIR ${COMPONENT_PATH}/../../../../../..)
-set(CONFIG_PLATFORM "esp32")
-set(AOSL_DECLARE_PROJECT OFF CACHE BOOL "Declare as Standalone Project" FORCE)
-include(${AOSL_DIR}/CMakeLists.txt)
-```
+| Control | Meaning |
+| --- | --- |
+| `AOSL_DECLARE_PROJECT` | Declare AOSL as a standalone project; defaults to `ON`. |
+| `AOSL_DIR` | AOSL source root; defaults to `CMAKE_CURRENT_SOURCE_DIR`. |
+| `CONFIG_PLATFORM` | Select `platform/src/<platform>`; the HAL delivered here is `bk725x`. |
+| `CMAKE_TOOLCHAIN_FILE` | Select a toolchain; [cmake/toolchain_template.cmake](cmake/toolchain_template.cmake) is the upstream template. |
 
-* Build Contents:  
-  CMakeLists.txt defines the following contents list for building:
-  - (1) AOSL_ADD_OPTIONS:          Compilation options used during compilation
-  - (2) AOSL_ADD_DEFINITIONS:      Macro definitions used during compilation
-  - (3) AOSL_ADD_INCLUDES_PUBLIC   Header file directories that need to be exported externally during compilation
-  - (4) AOSL_ADD_INCLUDES_PRIVATE  Internal header file directories used during compilation
-  - (5) AOSL_ADD_SOURCES           Source files needed during compilation
-  If you need to introduce aosl as a subdir when porting, you can use these variables for compilation and building.
-
-# 3.1.2 Toolchain Settings
-cmake/toolchain_template.cmake is a default toolchain description file. When porting, you can add modifications to introduce the corresponding platform's toolchain or just modify the default toolchain file.
-```
-cmake -DCMAKE_TOOLCHAIN_FILE="arm-linux-gnu.cmake"
-```
-
-# 3.1.3 Start Building
-Use the platform's build project for compilation and building.
+[cmake/build.cmake](cmake/build.cmake) defines `AOSL_ADD_OPTIONS`, `AOSL_ADD_DEFINITIONS`,
+`AOSL_ADD_INCLUDES_PUBLIC`, `AOSL_ADD_INCLUDES_PRIVATE`, and `AOSL_ADD_SOURCES` for CMake consumers.
+These controls describe the standalone build machinery; the R1 wrapper explicitly selects its
+source list and compile configuration.
 
 # 4. Build Example
-You can refer to platform/src/esp32/idf-proj as a reference example for building aosl as a component:
-```
-# 1. Set build variables
-set(AOSL_DIR ${COMPONENT_PATH}/../../../../../..)
-set(CONFIG_PLATFORM "esp32")
-# 2. Set build options
-set(AOSL_DECLARE_PROJECT OFF CACHE BOOL "Declare as Standalone Project" FORCE)
 
-# 3. Use aosl/CmakeLists.txt as subdir
-include(${AOSL_DIR}/CMakeLists.txt)
+The delivered component integration is [../CMakeLists.txt](../CMakeLists.txt), and its firmware
+host is [projects/mybot](../../../../projects/mybot/). After preparing the dependencies and
+toolchain according to the R1 README, run this command from the `agora-r1-devkit` repository root:
 
-# 3. Use build parameters such as AOSL_ADD_SOURCES
-idf_component_register(SRCS ${AOSL_ADD_SOURCES}
-                       INCLUDE_DIRS ${AOSL_ADD_INCLUDES_PUBLIC}
-                       PRIV_INCLUDE_DIRS ${AOSL_ADD_INCLUDES_PRIVATE}
-                       REQUIRES spi_flash newlib lwip mbedtls freertos esp_netif)
-target_compile_options(${COMPONENT_LIB} PRIVATE ${AOSL_ADD_OPTIONS})
-target_compile_definitions(${COMPONENT_LIB} PRIVATE ${AOSL_ADD_DEFINITIONS})
+```bash
+python3 scripts/build_all.py
 ```
+
+The [BK725x SDK platform guide](../../mybot_sdk/platforms/bk725x/README.md) describes platform
+registration and the application controller. The [R1 dependency guide](../../../../docs/OFFICIAL_DEPENDENCIES.md)
+documents the build integration and validation record.
 
 # Start History
 [![Star History Chart](https://api.star-history.com/svg?repos=AgoraIO-Community/aosl&type=date&legend=top-left)](https://www.star-history.com/#AgoraIO-Community/aosl&type=date&legend=top-left)

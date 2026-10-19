@@ -12,6 +12,12 @@ The managed runtime files in `snapshots.json` retain the following provenance:
 * RTSA library, public header, package metadata and thread adapter: the same
   `bk_avdk_smp` commit, under `ap/components/bk_thirdparty/agora-iot-sdk`.
 
+The BK725x platform READMEs and AOSL README describe the files and build entry
+points delivered in this repository. Their three digests in `snapshots.json`
+reflect these documentation corrections. SDK code, the AOSL implementation,
+RTSA binaries, license files and revision metadata retain the pinned inputs
+described above.
+
 These URLs identify historical provenance; builds use the local snapshots and
 the official BK repositories recorded by the vendor lock. The local CMake
 wrappers select the original BK7258 AOSL sources explicitly, with no additional
