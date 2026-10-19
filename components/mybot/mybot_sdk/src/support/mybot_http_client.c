@@ -465,8 +465,9 @@ static int send_all(http_stream_t *stream, const char *data, size_t len, uint64_
  * ---------------------------------------------------------- */
 
 /*
- * Read everything from the socket into a dynamic buffer.
- * Uses a simple loop with recv until connection closes or timeout.
+ * Read a response into a bounded dynamic buffer. Stop when the Content-Length body is
+ * complete, the connection closes, or the shared deadline expires; fail on receive or
+ * allocation errors.
  */
 static char *read_all(http_stream_t *stream, size_t *out_len, int *out_closed, uint64_t deadline) {
     size_t cap = RECV_BUF_SIZE;

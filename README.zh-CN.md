@@ -20,7 +20,7 @@
 其核心采用 C99 编写，依赖 AOSL 提供可移植运行时，并通过平台 `ops` 接口获取 Wi-Fi、
 持久化存储、按键、显示、音频和网络传输等设备能力。
 
-本地快照采用 mybot SDK 1.2.0，并保留最新 BK7258 源码基线中的音频生命周期、
+本地快照采用 mybot SDK 1.3.0，并保留最新 BK7258 源码基线中的音频生命周期、
 设备身份实现和 LCD 状态标记。
 
 本仓库不重新定义 mybot SDK，而是提供 BK7258 平台所需的完整实现：
@@ -62,7 +62,7 @@ BK7258 固件采用 AP/CP 双核结构：
 | `bk_avdk_smp/` | BK7258 SMP SDK 与平台基础组件 | [bekencorp/bk_avdk_smp](https://github.com/bekencorp/bk_avdk_smp) |
 | `bk_solution_ai/` | BK 官方 AI 解决方案组件 | [bekencorp/bk_solution_ai](https://github.com/bekencorp/bk_solution_ai) |
 | `projects/mybot/` | AP/CP 入口、板级配置、分区表和提示音资源 | 本仓库 |
-| `components/mybot/mybot_sdk/` | mybot SDK 1.2.0 及 `platforms/bk725x` 平台实现 | 本地源码快照 |
+| `components/mybot/mybot_sdk/` | mybot SDK 1.3.0 及 `platforms/bk725x` 平台实现 | 本地源码快照 |
 | `components/mybot/mybot_aosl/` | AOSL 运行时及 BK7258 适配 | 本地源码快照 |
 | `components/mybot/mybot_rtsa/` | Agora RTSA 头文件与二进制，build `1292388` | 本地快照 |
 | `patches/` | 准备 SDK 时应用的小范围补丁 | 本仓库 |
@@ -76,7 +76,7 @@ BK7258 固件采用 AP/CP 双核结构：
 工程、BK725x 平台适配、AOSL 和 RTSA 输入保留主仓迁移基线 `04c8283` 及其固定的 Solution
 `438f1325`、AVDK `a9529f12` 快照。源码和二进制的校验和记录于
 `components/mybot/snapshots.json`。
-mybot SDK 的 `include/`、`src/` 快照单独更新至上游 `39d5ed1`（版本 1.2.0），
+mybot SDK 的 `include/`、`src/` 快照单独更新至上游 `58f0ef9`（版本 1.3.0），
 详见 `components/mybot/mybot_sdk/SDK_REVISION`。
 
 本地运行时组件只在 AP 目标编译；`mybot_aosl` 和 `mybot_rtsa` 提供工程所需的运行时，
@@ -151,7 +151,7 @@ python3 scripts/prepare_vendor.py --language en-US
 `app_pack.rbl` 和内存报告 `build_summary.txt`。CP、AP 独立镜像分别位于生成工程的
 `build/bk7258/mybot/bk7258/` 和 `build/bk7258/mybot/bk7258_ap/`。
 
-2026-10-18 已完成中英文两个版本的构建验证，尚未进行板端测试。
+2026-10-19 已完成中英文两个版本的构建验证，尚未进行板端测试。
 检查内容与固件哈希见[验证记录](docs/OFFICIAL_DEPENDENCIES.md#validation)。
 
 ## 烧录与运行

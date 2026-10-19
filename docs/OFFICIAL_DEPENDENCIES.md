@@ -11,7 +11,7 @@ the audio lifecycle, device identity implementation, LCD status badges, and regi
 configuration.
 
 The MyBot SDK `include/` and `src/` snapshot is subsequently updated directly from upstream
-`39d5ed122aab51d90c1c531298c4ead8dc35b104` (version 1.2.0). Its exact source revision and
+`58f0ef9c14be9f159b1dc167bf0f035983b25117` (version 1.3.0). Its exact source revision and
 archive checksum are recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
 
 The AVDK integration and local AOSL/RTSA inputs preserve the exact pinned source revision
@@ -38,7 +38,7 @@ changes before creating a build workspace.
 | Path | Content |
 | --- | --- |
 | `projects/mybot/` | AP/CP entry points, board configuration, Flash/RAM layouts, OGG assets, and asset-generation scripts |
-| `components/mybot/mybot_sdk/` | mybot SDK 1.2.0 snapshot, BK725x adapters and modules, and embedded prompt arrays |
+| `components/mybot/mybot_sdk/` | mybot SDK 1.3.0 snapshot, BK725x adapters and modules, and embedded prompt arrays |
 | `components/mybot/mybot_aosl/` | BK7258 AOSL runtime snapshot and platform adaptation from the pinned AVDK source |
 | `components/mybot/mybot_rtsa/` | BK7258 Agora RTSA headers and library, build `1292388`, from the pinned AVDK source |
 
@@ -149,13 +149,13 @@ Review source and binary differences before accepting new checksums.
 
 ## Validation
 
-Validated on 2026-10-18 after refreshing MyBot SDK to `39d5ed1`:
+Validated on 2026-10-19 after refreshing MyBot SDK to `58f0ef9` (version 1.3.0):
 
 - All 256 source and binary snapshot checksums passed, together with 30 host tests.
-- The upstream `mybot_device_command_test`, `mybot_app_test`, and
-  `mybot_media_pipeline_test` passed for the updated SDK, including wrapped MCP volume commands.
+- The upstream `mybot_http_client_test`, `mybot_json_test`, and
+  `mybot_public_headers_test` passed, including the runtime SDK version check.
 - A fresh `python3 scripts/build_all.py` completed both AP/CP builds and complete firmware
-  packages: Chinese in 49 seconds, English in 44 seconds, total elapsed time 1 minute 39 seconds.
+  packages: Chinese in 39 seconds, English in 39 seconds, total elapsed time 1 minute 19 seconds.
 - The generated AP configuration and firmware were checked for the selected language, matching
   regional service endpoint, and exactly one corresponding TLS trust anchor: DigiCert Global
   Root G2 for Chinese and Go Daddy Root Certificate Authority - G2 for English.
@@ -164,7 +164,7 @@ Validated on 2026-10-18 after refreshing MyBot SDK to `39d5ed1`:
 
 | Complete flash image | SHA-256 |
 | --- | --- |
-| `releases/bk7258-zh-CN.bin` | `d26e01939f632dae5afede50a3c06478e4bb366c5041126b57fcff18013f2d0b` |
-| `releases/bk7258-en-US.bin` | `2a6aae9d32abb7458af2d3374fe72ffadddef6b443ed704502fa16fb43df51d8` |
+| `releases/bk7258-zh-CN.bin` | `266a9c780829fb8b4b173d2a6d860dac6687654bb1a032bc366bae8b1c2cce32` |
+| `releases/bk7258-en-US.bin` | `b92ccc0a09c65b1b40293fec20a617aa05b8462c8a3eca585a16e3c67ec386aa` |
 
 Board testing has not been performed for this SDK refresh.
