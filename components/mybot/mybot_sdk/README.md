@@ -22,7 +22,7 @@ Platform-specific capabilities are injected through a small set of `ops` interfa
 the core depends only on C99 and AOSL and can be ported to virtually any platform — Linux, an
 RTOS, or a bare-metal MCU.
 
-> Current version: **1.2.0**. The bundled Agora RTSA
+> Current version: **1.3.0**. The bundled Agora RTSA
 > binary and AOSL have separate licensing and usage terms; read
 > [License and third-party dependencies](#license-and-third-party-dependencies) before using the
 > SDK in a product.

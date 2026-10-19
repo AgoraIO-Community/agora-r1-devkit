@@ -1,10 +1,10 @@
 repository=https://github.com/junlon2006/mybot.git
 ref=refs/heads/main
-commit=39d5ed122aab51d90c1c531298c4ead8dc35b104
-version=1.2.0
+commit=58f0ef9c14be9f159b1dc167bf0f035983b25117
+version=1.3.0
 include_tree=9ee3a8bd4f85a9b211c68e2a4edcb466fb6580b2
-src_tree=9448fb619a849389677a63eb8974789f6a0d68bb
-archive_sha256=c7904edb0872c6f5e5e35feeacd5bcd06a0ac7ece933e56ee5ea8acf7de86530
+src_tree=c0032496b56ae8c40bdc5f7fe41847ca4e720153
+archive_sha256=70ec6d72549e6ff9d58ab5ff530af35ec9e9fe625dc30726c01bbc2af6a16499
 
 # include/ and src/ match the upstream commit byte-for-byte, except for
 # include/mybot/mybot_version.h, generated from the upstream .h.in template

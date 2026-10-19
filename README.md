@@ -27,7 +27,7 @@ edge devices. Its core is written in C99, uses AOSL as its portable runtime, and
 capabilities such as Wi-Fi, persistent storage, buttons, displays, audio, and network transport
 through platform `ops` interfaces.
 
-The local snapshot uses agent-studio-device-firmware SDK 1.2.0 and retains the latest BK7258 audio
+The local snapshot uses agent-studio-device-firmware SDK 1.3.0 and retains the latest BK7258 audio
 lifecycle, device identity implementation, and LCD status badges from the source baseline.
 
 This repository does not redefine the upstream SDK. It provides the complete implementation
@@ -71,7 +71,7 @@ The BK7258 firmware uses an AP/CP dual-core architecture:
 | `bk_avdk_smp/` | BK7258 SMP SDK and platform foundation components | [bekencorp/bk_avdk_smp](https://github.com/bekencorp/bk_avdk_smp) |
 | `bk_solution_ai/` | Official AI solution components | [bekencorp/bk_solution_ai](https://github.com/bekencorp/bk_solution_ai) |
 | `projects/mybot/` | AP/CP entry points, board configuration, partition tables, and prompt assets | This repository |
-| `components/mybot/mybot_sdk/` | agent-studio-device-firmware SDK 1.2.0 and the `platforms/bk725x` implementation | Local source snapshot |
+| `components/mybot/mybot_sdk/` | agent-studio-device-firmware SDK 1.3.0 and the `platforms/bk725x` implementation | Local source snapshot |
 | `components/mybot/mybot_aosl/` | AOSL runtime and BK7258 adaptation | Local source snapshot |
 | `components/mybot/mybot_rtsa/` | Agora RTSA headers and binary, build `1292388` | Local snapshot |
 | `patches/` | Small patches applied when preparing the SDK | This repository |
@@ -86,8 +86,8 @@ for the patch scope and update procedure.
 The project, BK725x adapters, AOSL, and RTSA inputs preserve main revision `04c8283` and its pinned
 Solution `438f1325` and AVDK `a9529f12` snapshots. Their sources and binaries are recorded by
 checksum in `components/mybot/snapshots.json`.
-The agent-studio-device-firmware SDK `include/` and `src/` snapshot is updated separately to upstream `39d5ed1`
-(version 1.2.0), as recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
+The agent-studio-device-firmware SDK `include/` and `src/` snapshot is updated separately to upstream `58f0ef9`
+(version 1.3.0), as recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
 
 The local runtime components build for AP only. `CONFIG_AGORA_IOT_SDK` stays disabled because
 `mybot_aosl` and `mybot_rtsa` provide the runtime used by this project.
@@ -162,7 +162,7 @@ The generated project's `build/bk7258/mybot/package/` directory also contains `a
 `app_pack.rbl` (CP/AP OTA package), and `build_summary.txt` (memory usage report). Individual
 CP and AP images are under `build/bk7258/mybot/bk7258/` and `build/bk7258/mybot/bk7258_ap/`.
 
-Both language builds passed on 2026-10-18; hardware testing remains outstanding. See the
+Both language builds passed on 2026-10-19; hardware testing remains outstanding. See the
 [validation record](docs/OFFICIAL_DEPENDENCIES.md#validation) for checks and firmware hashes.
 
 ## Flash and run
