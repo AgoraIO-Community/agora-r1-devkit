@@ -83,11 +83,15 @@ This changes source ownership and build integration without upgrading the BK7258
 the RTSA binary with the BK7259 version. See [official dependencies](docs/OFFICIAL_DEPENDENCIES.md)
 for the patch scope and update procedure.
 
-The project, BK725x adapters, AOSL, and RTSA inputs preserve main revision `04c8283` and its pinned
-Solution `438f1325` and AVDK `a9529f12` snapshots. Their sources and binaries are recorded by
-checksum in `components/mybot/snapshots.json`.
-The agent-studio-device-firmware SDK `include/` and `src/` snapshot is updated separately to upstream `58f0ef9`
-(version 1.3.0), as recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
+The BK725x platform and AOSL snapshots match the published R1 baseline
+[`0db7814`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/0db7814501093d67cd614944996832c018c31f99/components/mybot).
+The RTSA library is preserved byte-for-byte from that baseline; see
+[snapshot provenance](components/mybot/SNAPSHOTS.md).
+The SDK `include/` and `src/` match the official
+[agent-studio-device-firmware v1.3.0](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/v1.3.0)
+commit `32ac74bc59cb72db70e9a68337753561b59b13d0`.
+The official revision and checksums are recorded in `components/mybot/mybot_sdk/SDK_REVISION`
+and `components/mybot/snapshots.json`.
 
 The local runtime components build for AP only. `CONFIG_AGORA_IOT_SDK` stays disabled because
 `mybot_aosl` and `mybot_rtsa` provide the runtime used by this project.

@@ -75,11 +75,15 @@ BK7258 固件采用 AP/CP 双核结构：
 本次迁移调整源码归属和构建集成，不升级 BK7258 SDK，也不替换为 BK7259 的 RTSA
 二进制。补丁范围和版本更新方式见[官方依赖说明](docs/OFFICIAL_DEPENDENCIES.md)。
 
-工程、BK725x 平台适配、AOSL 和 RTSA 输入保留主仓迁移基线 `04c8283` 及其固定的 Solution
-`438f1325`、AVDK `a9529f12` 快照。源码和二进制的校验和记录于
+BK725x 平台适配和 AOSL 快照与已发布的 R1 基线
+[`0db7814`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/0db7814501093d67cd614944996832c018c31f99/components/mybot)
+一致。RTSA 静态库按该基线的原始字节保留，来源见
+[快照说明](components/mybot/SNAPSHOTS.md)。
+SDK 的 `include/`、`src/` 与官方
+[agent-studio-device-firmware v1.3.0](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/v1.3.0)
+提交 `32ac74bc59cb72db70e9a68337753561b59b13d0` 一致。
+官方版本和校验和记录于 `components/mybot/mybot_sdk/SDK_REVISION` 与
 `components/mybot/snapshots.json`。
-agent-studio-device-firmware SDK 的 `include/`、`src/` 快照单独更新至上游 `58f0ef9`（版本 1.3.0），
-详见 `components/mybot/mybot_sdk/SDK_REVISION`。
 
 本地运行时组件只在 AP 目标编译；`mybot_aosl` 和 `mybot_rtsa` 提供工程所需的运行时，
 因此保持 `CONFIG_AGORA_IOT_SDK` 关闭。

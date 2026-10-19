@@ -1,10 +1,10 @@
-repository=https://github.com/junlon2006/mybot.git
-ref=refs/heads/main
-commit=58f0ef9c14be9f159b1dc167bf0f035983b25117
+repository=https://github.com/AgoraIO-Community/agent-studio-device-firmware.git
+ref=refs/tags/v1.3.0
+commit=32ac74bc59cb72db70e9a68337753561b59b13d0
 version=1.3.0
 include_tree=9ee3a8bd4f85a9b211c68e2a4edcb466fb6580b2
 src_tree=c0032496b56ae8c40bdc5f7fe41847ca4e720153
-archive_sha256=70ec6d72549e6ff9d58ab5ff530af35ec9e9fe625dc30726c01bbc2af6a16499
+archive_sha256=6443be044e8210057b0291e53b8ea6dcb92664f54b78fd9c71ac2f10c34e292e
 
 # include/ and src/ match the upstream commit byte-for-byte, except for
 # include/mybot/mybot_version.h, generated from the upstream .h.in template

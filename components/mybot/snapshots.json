@@ -2,23 +2,30 @@
   "schema_version": 1,
   "sources": {
     "mybot_sdk": {
-      "repository": "https://github.com/junlon2006/bk_solution_ai.git",
-      "commit": "438f132542bf3f0bb2f79aee49154d83cd6fdaf9",
-      "path": "components/mybot",
-      "sdk_repository": "https://github.com/junlon2006/mybot.git",
-      "sdk_commit": "58f0ef9c14be9f159b1dc167bf0f035983b25117",
-      "sdk_version": "1.3.0"
+      "repository": "https://github.com/AgoraIO-Community/agent-studio-device-firmware.git",
+      "commit": "32ac74bc59cb72db70e9a68337753561b59b13d0",
+      "path": ".",
+      "sdk_repository": "https://github.com/AgoraIO-Community/agent-studio-device-firmware.git",
+      "sdk_commit": "32ac74bc59cb72db70e9a68337753561b59b13d0",
+      "sdk_version": "1.3.0",
+      "ref": "refs/tags/v1.3.0",
+      "platform_snapshot": {
+        "repository": "https://github.com/AgoraIO-Community/agora-r1-devkit.git",
+        "commit": "0db7814501093d67cd614944996832c018c31f99",
+        "path": "components/mybot/mybot_sdk/platforms/bk725x",
+        "tree": "140a4036df5c3dafcaff8deb3828ec354ed3cfc4"
+      }
     },
     "mybot_aosl": {
-      "repository": "https://github.com/junlon2006/bk_avdk_smp.git",
-      "commit": "a9529f1224747604192b46668471d3473d80050c",
-      "path": "ap/components/bk_thirdparty/agora-iot-sdk/hal/aosl",
-      "tree": "1fbc810012096e0fa21baf8cd1a3a816efacda21"
+      "repository": "https://github.com/AgoraIO-Community/agora-r1-devkit.git",
+      "commit": "0db7814501093d67cd614944996832c018c31f99",
+      "path": "components/mybot/mybot_aosl/aosl",
+      "tree": "074abfff5398e729fb909ad67efdd63d44618997"
     },
     "mybot_rtsa": {
-      "repository": "https://github.com/junlon2006/bk_avdk_smp.git",
-      "commit": "a9529f1224747604192b46668471d3473d80050c",
-      "path": "ap/components/bk_thirdparty/agora-iot-sdk",
+      "repository": "https://github.com/AgoraIO-Community/agora-r1-devkit.git",
+      "commit": "0db7814501093d67cd614944996832c018c31f99",
+      "path": "components/mybot/mybot_rtsa",
       "package": "Agora-RTSALite-SRmRcAcAj-arm-rtos-gnu-1021-bk7258-v1.10.1-20260911_153542-1292388",
       "metadata_stale": "The original PACKAGE_INFO and readme.txt still describe the previous 20260824 build 1264541 and its old hashes. The original CHANGELOG.md also predates this package. These files are preserved verbatim; package above is read from the current library binary. No checksum for the current source archive is available."
     }
@@ -156,7 +163,7 @@
     "mybot_rtsa/lib/arm/PACKAGE_INFO": "b326f4f0eff9cb9354d9ba2fb148f199a3868bc7a88f0027086a5d540b25035f",
     "mybot_rtsa/lib/arm/libagora-rtc-sdk.a": "fb3d08126e14cf2eb99c531390822a591b094537d54abf8df95c5a5f587be8ec",
     "mybot_rtsa/lib/arm/readme.txt": "f65d107cb51ff93ab555d042dd4a3085549c266dfc2002420a36818a07d4133f",
-    "mybot_sdk/SDK_REVISION": "7a8e3e2f1dae7be2d8a54b838069ec783858ad5584d367a1d620183bc1bbc839",
+    "mybot_sdk/SDK_REVISION": "d589a44fd0dc9da067dc93482f91a4a0ba15c83e646487fde5507ef646f23cb9",
     "mybot_sdk/include/mybot/mybot.h": "5439bf58263da7765447d197e9bf1becde05cfc67bfafbd9cc2a1dab6169fc83",
     "mybot_sdk/include/mybot/mybot_build_config.h": "723ece49b27830bc3b4cd886cf2f96debda450f7806b29d16a89ef81ac4bbef1",
     "mybot_sdk/include/mybot/mybot_errors.h": "97643c086cf748adbb4af7358e3cdb223a166e708aa4f5c7c7464532a41831cb",
