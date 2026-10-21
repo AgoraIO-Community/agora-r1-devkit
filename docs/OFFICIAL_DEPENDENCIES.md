@@ -11,10 +11,6 @@ The SDK `include/` and `src/` match official
 [agent-studio-device-firmware v1.3.0](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/v1.3.0),
 commit `32ac74bc59cb72db70e9a68337753561b59b13d0`. Its official ref, source trees and
 archive checksum are recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
-The 22 Chinese and English pairing prompt/digit PCM files come from official
-agent-studio-device-firmware commit
-`c5215b77321fe720b23ed78f313cc0452881d562` and are converted to Opus-in-Ogg with
-the existing project settings. Their separate provenance is recorded in `snapshots.json`.
 
 ## Fixed SDK baselines
 
@@ -23,7 +19,6 @@ the existing project settings. Their separate provenance is recorded in `snapsho
 | `bk_avdk_smp` | <https://github.com/bekencorp/bk_avdk_smp> | `d2ded037798530175e5dc5cde6fa1878f5d5ef35` |
 | `bk_solution_ai` | <https://github.com/bekencorp/bk_solution_ai> | `5e3ad9e818d3a3962eb45db23fd71b61238db5af` |
 | SDK core | <https://github.com/AgoraIO-Community/agent-studio-device-firmware> | `32ac74bc59cb72db70e9a68337753561b59b13d0` (`v1.3.0`) |
-| Pairing audio | <https://github.com/AgoraIO-Community/agent-studio-device-firmware> | `c5215b77321fe720b23ed78f313cc0452881d562` |
 
 The Beken commits pin the platform dependencies; the SDK core is locked independently to its
 official release. The top-level gitlinks pin the Beken commits; routine setup uses
@@ -167,7 +162,7 @@ records; the complete firmware build has not been rerun for this update:
 - The SDK `include/` and `src/` trees matched the selected source, apart from the generated
   version header; these core trees are also identical to the official 1.3.0 release.
 - All 22 updated pairing audio files passed Opus header, mono channel, pre-skip and final
-  granule checks. Decoding to 16 kHz mono s16 produced the source PCM sample counts.
+  granule checks and decoded successfully to 16 kHz mono s16 PCM.
   The generated C arrays matched all 26 project Ogg assets (76,900 bytes total).
 - `python3 scripts/build_all.py` completed both AP/CP builds and complete firmware packages:
   Chinese in 43 seconds, English in 40 seconds, total elapsed time 1 minute 24 seconds.

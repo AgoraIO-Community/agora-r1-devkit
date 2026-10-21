@@ -31,15 +31,6 @@
       "path": "components/mybot/mybot_rtsa",
       "package": "Agora-RTSALite-SRmRcAcAj-arm-rtos-gnu-1021-bk7258-v1.10.1-20260911_153542-1292388",
       "metadata_stale": "The original PACKAGE_INFO and readme.txt still describe the previous 20260824 build 1264541 and its old hashes. The original CHANGELOG.md also predates this package. These files are preserved verbatim; package above is read from the current library binary. No checksum for the current source archive is available."
-    },
-    "pairing_audio": {
-      "repository": "https://github.com/AgoraIO-Community/agent-studio-device-firmware.git",
-      "commit": "c5215b77321fe720b23ed78f313cc0452881d562",
-      "path": "assets/locales",
-      "tree": "80e9d2ba1529b78f52dfb78512bf22d7c66f05d3",
-      "source_format": "16 kHz mono s16le PCM",
-      "encoding": "Opus-in-Ogg, libopus 24 kbps VBR, voip application",
-      "ref": "refs/heads/main"
     }
   },
   "files": {

@@ -221,10 +221,6 @@ GPIO、显示屏和音频外设连接属于板级配置；适配其他 BK7258 �
 提示音位于 `projects/mybot/assets/locales/`，格式为 16 kHz 单声道
 Opus-in-Ogg。资源以只读 C 数组编入 AP 固件，不依赖 SD 卡，也不使用独立的
 `assets_data` 分区；解码后的 PCM 缓冲区在运行时从 PSRAM 分配。
-中英文配对提示及数字语音共 22 个文件，取自 agent-studio-device-firmware 提交
-[`c5215b7`](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/c5215b77321fe720b23ed78f313cc0452881d562/assets/locales)
-的 16 kHz 单声道 PCM 资源，沿用现有 Opus 参数转换。配网提示音 `success.ogg` 和
-`wificonfig.ogg` 保持不变。
 
 修改或新增 OGG 后，需要在构建前手动重新生成数组：
 
@@ -291,7 +287,6 @@ git submodule update --init --recursive
 - [bk_solution_ai 许可证](bk_solution_ai/LICENSE)
 - [agent-studio-device-firmware SDK 许可证](components/mybot/mybot_sdk/LICENSE)
 - [AOSL 许可证及附加条款](components/mybot/mybot_aosl/aosl/LICENSE)
-- [配网音频许可](projects/mybot/assets/LICENSE.audio)
 - [agent-studio-device-firmware 第三方依赖说明](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/THIRD_PARTY_NOTICES.md)
 
 Agora RTSA 等预编译二进制可能受试用期限、再分发和商业授权限制。将本项目用于产品或

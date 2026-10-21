@@ -234,10 +234,7 @@ Each firmware compiles only the root certificate for its region.
 Prompt assets are stored under `projects/mybot/assets/locales/` as 16 kHz mono
 Opus-in-Ogg files. They are compiled into the AP firmware as read-only C arrays, require no SD
 card, and use no separate `assets_data` partition. Decoded PCM buffers are allocated from PSRAM
-at runtime. The 22 Chinese and English pairing prompt and digit files are converted from the
-16 kHz mono PCM resources in agent-studio-device-firmware commit
-[`c5215b7`](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/c5215b77321fe720b23ed78f313cc0452881d562/assets/locales),
-using the existing Opus settings. The provisioning `success.ogg` and `wificonfig.ogg` remain unchanged.
+at runtime.
 
 After modifying or adding an OGG file, regenerate the C arrays manually before building:
 
@@ -309,7 +306,6 @@ terms of use, including but not limited to:
 - [bk_solution_ai license](bk_solution_ai/LICENSE)
 - [agent-studio-device-firmware SDK license](components/mybot/mybot_sdk/LICENSE)
 - [AOSL license and additional terms](components/mybot/mybot_aosl/aosl/LICENSE)
-- [Provisioning audio license](projects/mybot/assets/LICENSE.audio)
 - [agent-studio-device-firmware third-party notices](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/THIRD_PARTY_NOTICES.md)
 
 Prebuilt binaries such as Agora RTSA may be subject to evaluation periods, redistribution
