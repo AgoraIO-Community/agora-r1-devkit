@@ -6,8 +6,16 @@
       "commit": "438f132542bf3f0bb2f79aee49154d83cd6fdaf9",
       "path": "components/mybot",
       "sdk_repository": "https://github.com/junlon2006/mybot.git",
-      "sdk_commit": "58f0ef9c14be9f159b1dc167bf0f035983b25117",
+      "sdk_commit": "3f9a1add55f1b946d59655b5b88f4662d780fb31",
       "sdk_version": "1.3.0"
+    },
+    "pairing_audio": {
+      "repository": "https://github.com/junlon2006/mybot.git",
+      "commit": "3f9a1add55f1b946d59655b5b88f4662d780fb31",
+      "path": "assets/locales",
+      "tree": "80e9d2ba1529b78f52dfb78512bf22d7c66f05d3",
+      "source_format": "16 kHz mono s16le PCM",
+      "encoding": "Opus-in-Ogg, libopus 24 kbps VBR, voip application"
     },
     "mybot_aosl": {
       "repository": "https://github.com/junlon2006/bk_avdk_smp.git",
@@ -156,7 +164,7 @@
     "mybot_rtsa/lib/arm/PACKAGE_INFO": "b326f4f0eff9cb9354d9ba2fb148f199a3868bc7a88f0027086a5d540b25035f",
     "mybot_rtsa/lib/arm/libagora-rtc-sdk.a": "fb3d08126e14cf2eb99c531390822a591b094537d54abf8df95c5a5f587be8ec",
     "mybot_rtsa/lib/arm/readme.txt": "f65d107cb51ff93ab555d042dd4a3085549c266dfc2002420a36818a07d4133f",
-    "mybot_sdk/SDK_REVISION": "7a8e3e2f1dae7be2d8a54b838069ec783858ad5584d367a1d620183bc1bbc839",
+    "mybot_sdk/SDK_REVISION": "83611f7174da53df4a281b54668bb58a2d6fafed6f80280dbcc2f1cf1313be26",
     "mybot_sdk/include/mybot/mybot.h": "5439bf58263da7765447d197e9bf1becde05cfc67bfafbd9cc2a1dab6169fc83",
     "mybot_sdk/include/mybot/mybot_build_config.h": "723ece49b27830bc3b4cd886cf2f96debda450f7806b29d16a89ef81ac4bbef1",
     "mybot_sdk/include/mybot/mybot_errors.h": "97643c086cf748adbb4af7358e3cdb223a166e708aa4f5c7c7464532a41831cb",
@@ -229,7 +237,7 @@
     "mybot_sdk/platforms/bk725x/modules/network/mybot_wifi_credentials.h": "b385a3b48342036b39feccc55aa628886afbe7170237da7ad5ade58678a11843",
     "mybot_sdk/platforms/bk725x/modules/network/mybot_wifi_runtime.c": "077682b39e95231d33f59398ba0fe9291c2880929e2839bc6d828f45f8593fc8",
     "mybot_sdk/platforms/bk725x/modules/network/mybot_wifi_runtime.h": "97e7ee1f41cf517d042624fe6bcb50d9de4195c5d0b469ca94ed2aea0006b855",
-    "mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.c": "f70f292a78a431d4275db07265c1956b20baba912eebd03ca220be37b372ec14",
+    "mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.c": "77f263e55b659b31a571e055389ee76b642070efa03337b5c4c77b4009de4f0e",
     "mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.h": "afd4a7798ac9a7e74afbdbe9be1accc8b2b35505bd207c71ad194b262396623e",
     "mybot_sdk/platforms/bk725x/modules/storage/mybot_kv_bk_env.c": "80fd7640cfc0d8032e5147ed4a937c71083e4e6ad49ab064b262b9549fd73ee4",
     "mybot_sdk/platforms/bk725x/modules/storage/mybot_kv_bk_env.h": "91c67c71c92cedcc10d4303d12597f80100876670fcc0e74d36f49c6e3efb879",

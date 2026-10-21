@@ -11,8 +11,10 @@ the audio lifecycle, device identity implementation, LCD status badges, and regi
 configuration.
 
 The MyBot SDK `include/` and `src/` snapshot is subsequently updated directly from upstream
-`58f0ef9c14be9f159b1dc167bf0f035983b25117` (version 1.3.0). Its exact source revision and
+`3f9a1add55f1b946d59655b5b88f4662d780fb31` (version 1.3.0). Its exact source revision and
 archive checksum are recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
+The Chinese and English pairing prompt/digit PCM assets from that revision are converted
+to Opus-in-Ogg with the project's existing settings and embedded into the AP firmware.
 
 The AVDK integration and local AOSL/RTSA inputs preserve the exact pinned source revision
 `a9529f1224747604192b46668471d3473d80050c`. The official bases, local snapshots, and patches
@@ -149,13 +151,16 @@ Review source and binary differences before accepting new checksums.
 
 ## Validation
 
-Validated on 2026-10-19 after refreshing MyBot SDK to `58f0ef9` (version 1.3.0):
+Validated on 2026-10-21 after refreshing MyBot SDK to `3f9a1ad` (version 1.3.0):
 
 - All 256 source and binary snapshot checksums passed, together with 30 host tests.
-- The upstream `mybot_http_client_test`, `mybot_json_test`, and
-  `mybot_public_headers_test` passed, including the runtime SDK version check.
+- The SDK `include/` and `src/` trees are unchanged from the preceding SDK snapshot and match
+  the selected upstream commit byte-for-byte, apart from the generated version header.
+- All 22 updated pairing audio files passed Opus header, mono channel, pre-skip and final
+  granule checks. Decoding with ffmpeg to 16 kHz mono s16 produced exactly the source PCM
+  sample counts. The generated C arrays match all 26 project Ogg assets (76,900 bytes total).
 - A fresh `python3 scripts/build_all.py` completed both AP/CP builds and complete firmware
-  packages: Chinese in 39 seconds, English in 39 seconds, total elapsed time 1 minute 19 seconds.
+  packages: Chinese in 43 seconds, English in 40 seconds, total elapsed time 1 minute 24 seconds.
 - The generated AP configuration and firmware were checked for the selected language, matching
   regional service endpoint, and exactly one corresponding TLS trust anchor: DigiCert Global
   Root G2 for Chinese and Go Daddy Root Certificate Authority - G2 for English.
@@ -164,7 +169,7 @@ Validated on 2026-10-19 after refreshing MyBot SDK to `58f0ef9` (version 1.3.0):
 
 | Complete flash image | SHA-256 |
 | --- | --- |
-| `releases/bk7258-zh-CN.bin` | `266a9c780829fb8b4b173d2a6d860dac6687654bb1a032bc366bae8b1c2cce32` |
-| `releases/bk7258-en-US.bin` | `b92ccc0a09c65b1b40293fec20a617aa05b8462c8a3eca585a16e3c67ec386aa` |
+| `releases/bk7258-zh-CN.bin` | `68671662dfb15ffcc92465a438c2a01629f3335f9abff0699480f377d3928c4e` |
+| `releases/bk7258-en-US.bin` | `f2379f81e0eca043dce6313fe394eca33ea758dd76b5b47454dd6ced1dfb8680` |
 
 Board testing has not been performed for this SDK refresh.
