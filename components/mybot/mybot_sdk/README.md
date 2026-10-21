@@ -485,16 +485,13 @@ Key CMake targets:
 
 ## Documentation
 
-This repository maintains the SDK core and Linux reference implementation. BK7258, BK7259,
-and ESP32 adapters, board configuration, and firmware builds are maintained in the independent
-projects linked below.
+This component contains the SDK core and Linux reference implementation. The BK7258 firmware
+project maintains its platform adapters, board configuration, assets, and device builds.
 
 - [Public headers](include/mybot/) — authoritative API and platform contracts; this README is the overview
 - [docs/PORTING.md](docs/PORTING.md) ([简体中文](docs/PORTING.zh-CN.md)) — porting guide and
   integration sequence and acceptance checklist
 - [mybot-bk7258](https://github.com/junlon2006/mybot-bk7258) — BK7258 reference firmware project
-- [mybot-bk7259](https://github.com/junlon2006/mybot-bk7259) — BK7259 reference firmware project
-- [mybot-esp32](https://github.com/junlon2006/mybot-esp32) — ESP32 cross-platform reference project
 - [docs/EMBEDDED.md](docs/EMBEDDED.md) ([简体中文](docs/EMBEDDED.zh-CN.md)) — footprint, memory,
   thread/stack, timing, power and logging guidance for MCU integrators
 - [docs/RELEASING.md](docs/RELEASING.md) ([简体中文](docs/RELEASING.zh-CN.md)) — release process

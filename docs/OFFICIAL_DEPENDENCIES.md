@@ -44,10 +44,8 @@ changes before creating a build workspace.
 | `components/mybot/mybot_aosl/` | BK7258 AOSL runtime snapshot and platform adaptation from the pinned AVDK source |
 | `components/mybot/mybot_rtsa/` | BK7258 Agora RTSA headers and library, build `1292388`, from the pinned AVDK source |
 
-The integration uses the BK7259 repository's approach of separating official dependencies from
-product code. It retains the BK7258 runtime versions, board configuration, and AP/CP architecture.
-The BK7259 RTSA binary is not substituted. Runtime snapshots retain their licenses and must be
-reviewed separately when updated.
+Official dependencies and local product code are maintained separately. Runtime snapshots use
+the BK7258 board configuration and AP/CP architecture and are reviewed independently when updated.
 
 The local component wrappers build for `bk7258_ap` only. AOSL keeps its original 48-source
 selection without additional compiler definitions. `CONFIG_AGORA_IOT_SDK` stays disabled so the
@@ -151,16 +149,18 @@ Review source and binary differences before accepting new checksums.
 
 ## Validation
 
-Validated on 2026-10-21 after refreshing MyBot SDK to `3f9a1ad` (version 1.3.0):
+Validated on 2026-10-21 with MyBot SDK `3f9a1ad` (version 1.3.0) and updated provisioning prompts:
 
 - All 256 source and binary snapshot checksums passed, together with 30 host tests.
 - The SDK `include/` and `src/` trees are unchanged from the preceding SDK snapshot and match
   the selected upstream commit byte-for-byte, apart from the generated version header.
 - All 22 updated pairing audio files passed Opus header, mono channel, pre-skip and final
   granule checks. Decoding with ffmpeg to 16 kHz mono s16 produced exactly the source PCM
-  sample counts. The generated C arrays match all 26 project Ogg assets (76,900 bytes total).
-- A fresh `python3 scripts/build_all.py` completed both AP/CP builds and complete firmware
-  packages: Chinese in 43 seconds, English in 40 seconds, total elapsed time 1 minute 24 seconds.
+  sample counts. The generated C arrays match all 26 project Ogg assets (79,630 bytes total).
+- Both local provisioning-entry prompts passed Opus header and 16 kHz mono decoding checks,
+  and both final AP ELFs contain the updated audio.
+- `python3 scripts/build_all.py --no-clean` completed both AP/CP builds and complete firmware
+  packages: Chinese in 22 seconds, English in 22 seconds, total elapsed time 44 seconds.
 - The generated AP configuration and firmware were checked for the selected language, matching
   regional service endpoint, and exactly one corresponding TLS trust anchor: DigiCert Global
   Root G2 for Chinese and Go Daddy Root Certificate Authority - G2 for English.
@@ -169,7 +169,7 @@ Validated on 2026-10-21 after refreshing MyBot SDK to `3f9a1ad` (version 1.3.0):
 
 | Complete flash image | SHA-256 |
 | --- | --- |
-| `releases/bk7258-zh-CN.bin` | `68671662dfb15ffcc92465a438c2a01629f3335f9abff0699480f377d3928c4e` |
-| `releases/bk7258-en-US.bin` | `f2379f81e0eca043dce6313fe394eca33ea758dd76b5b47454dd6ced1dfb8680` |
+| `releases/bk7258-zh-CN.bin` | `baadcfe2d7549ba653d671d0c054ccf05b5f73108d6952f6b6ee8a9a9eb0be4c` |
+| `releases/bk7258-en-US.bin` | `655703ac9c9946ece85f7c14191ea04c35bd4d13d6328087e958b298a73a29de` |
 
-Board testing has not been performed for this SDK refresh.
+Board playback verification remains outstanding for the updated provisioning prompts.

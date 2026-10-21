@@ -77,9 +77,7 @@ The BK7258 firmware uses an AP/CP dual-core architecture:
 
 The official SDK baselines are fixed at `d2ded037798530175e5dc5cde6fa1878f5d5ef35`
 (`bk_avdk_smp`) and `5e3ad9e818d3a3962eb45db23fd71b61238db5af` (`bk_solution_ai`).
-This changes source ownership and build integration without upgrading the BK7258 SDK or replacing
-the RTSA binary with the BK7259 version. See [official dependencies](docs/OFFICIAL_DEPENDENCIES.md)
-for the patch scope and update procedure.
+See [official dependencies](docs/OFFICIAL_DEPENDENCIES.md) for the patch scope and update procedure.
 
 The project, BK725x adapters, AOSL, and RTSA inputs preserve main revision `04c8283` and its pinned
 Solution `438f1325` and AVDK `a9529f12` snapshots. Their sources and binaries are recorded by
