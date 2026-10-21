@@ -75,9 +75,10 @@ BK7258 固件采用 AP/CP 双核结构：
 本次迁移调整源码归属和构建集成，不升级 BK7258 SDK，也不替换为 BK7259 的 RTSA
 二进制。补丁范围和版本更新方式见[官方依赖说明](docs/OFFICIAL_DEPENDENCIES.md)。
 
-BK725x 平台适配和 AOSL 快照与已发布的 R1 基线
-[`0db7814`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/0db7814501093d67cd614944996832c018c31f99/components/mybot)
-一致。RTSA 静态库按该基线的原始字节保留，来源见
+BK725x 平台适配保留已发布的 R1 基线
+[`6f77b38`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/6f77b3853ca9a13fd2597e80ee9c494ab8c11812/components/mybot/mybot_sdk/platforms/bk725x)，
+其中 `mybot_assets.c` 已按下文所述的配对提示音重新生成。
+AOSL 快照与 RTSA 静态库保留已发布输入及原始库字节，来源见
 [快照说明](components/mybot/SNAPSHOTS.md)。
 SDK 的 `include/`、`src/` 与官方
 [agent-studio-device-firmware v1.3.0](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/v1.3.0)
@@ -157,8 +158,9 @@ python3 scripts/prepare_vendor.py --language en-US
 `app_pack.rbl` 和内存报告 `build_summary.txt`。CP、AP 独立镜像分别位于生成工程的
 `build/bk7258/mybot/bk7258/` 和 `build/bk7258/mybot/bk7258_ap/`。
 
-2026-10-19 已完成中英文两个版本的构建验证，尚未进行板端测试。
-检查内容与固件哈希见[验证记录](docs/OFFICIAL_DEPENDENCIES.md#validation)。
+本次输入更新保留了 2026-10-21 中英文构建成功的历史记录，本次更新没有重新执行
+完整固件构建，尚未进行板端测试。检查内容与历史固件哈希见
+[验证记录](docs/OFFICIAL_DEPENDENCIES.md#validation)。
 
 ## 烧录与运行
 
@@ -285,7 +287,6 @@ git submodule update --init --recursive
 - [bk_solution_ai 许可证](bk_solution_ai/LICENSE)
 - [agent-studio-device-firmware SDK 许可证](components/mybot/mybot_sdk/LICENSE)
 - [AOSL 许可证及附加条款](components/mybot/mybot_aosl/aosl/LICENSE)
-- [提示音资源许可证](projects/mybot/assets/LICENSE.xiaozhi-esp32)
 - [agent-studio-device-firmware 第三方依赖说明](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/THIRD_PARTY_NOTICES.md)
 
 Agora RTSA 等预编译二进制可能受试用期限、再分发和商业授权限制。将本项目用于产品或

@@ -6,8 +6,7 @@
 `components/mybot/mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.c`；该源文件随 AP 固件一起编译，设备直接从
 固件中的只读数组读取并解码语音，不需要在 SD 卡上保存资源文件。
 
-生成器只收集 `locales/**/*.ogg`。`LICENSE.xiaozhi-esp32` 和本说明文件不会被
-编译进固件。
+生成器只收集 `locales/**/*.ogg`，本说明文件不会被编译进固件。
 
 ## 音频格式
 
@@ -23,10 +22,6 @@
 - `success.ogg`：配网成功提示（同上）。
 - `prompt.ogg` 与 `0.ogg`~`9.ogg`：播报配对码
   （`mybot_announce_pcm_bk725x.c` 的 `sound_file_name()`）。
-
-音频内容源自 MIT 协议的 `xiaozhi-esp32` 项目对应 locale 资源；配对码文件来自
-Linux mybot demo（文档标注为同一 `xiaozhi-esp32` 资源的衍生）。再分发必须保留
-`LICENSE.xiaozhi-esp32`。
 
 ## 修改现有语音
 

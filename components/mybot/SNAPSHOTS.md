@@ -6,17 +6,20 @@
   commit `32ac74bc59cb72db70e9a68337753561b59b13d0`. The SDK `include/` and `src/`
   match that commit, with the additional `mybot_version.h` generated from its template and
   version variables. `mybot_sdk/SDK_REVISION` records the official source trees and archive hash.
-- BK725x platform: the [published R1 baseline](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/0db7814501093d67cd614944996832c018c31f99/components/mybot/mybot_sdk/platforms/bk725x),
+- BK725x platform: the [published R1 baseline](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/6f77b3853ca9a13fd2597e80ee9c494ab8c11812/components/mybot/mybot_sdk/platforms/bk725x),
+  commit `6f77b3853ca9a13fd2597e80ee9c494ab8c11812`, path
+  `components/mybot/mybot_sdk/platforms/bk725x`. The platform retains this baseline except for
+  `modules/storage/mybot_assets.c`, regenerated from the current project Ogg files.
+- AOSL and its BK725x HAL: [published R1 commit `0db7814`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/0db7814501093d67cd614944996832c018c31f99/components/mybot/mybot_aosl/aosl),
   commit `0db7814501093d67cd614944996832c018c31f99`, path
-  `components/mybot/mybot_sdk/platforms/bk725x`.
-- AOSL and its BK725x HAL: the same published R1 commit, path
   `components/mybot/mybot_aosl/aosl`.
-- RTSA header, original library, package metadata and thread adapter: the same published R1
+- RTSA header, original library, package metadata and thread adapter: the same `0db7814`
   commit, path `components/mybot/mybot_rtsa`. The prebuilt library is preserved byte-for-byte.
 
 The BK725x platform READMEs and AOSL README describe the delivered files and build entry
-points. Their digests match the published R1 baseline above. SDK code, AOSL implementation,
-license files and platform configuration are unchanged by the provenance mapping.
+points. Their digests retain the corresponding published baseline. The SDK core, platform
+implementation outside the generated asset array, AOSL, RTSA, and board configuration remain
+unchanged. `snapshots.json` records the current per-file digests, including `mybot_assets.c`.
 
 Builds use these local snapshots and the official Beken repositories in `vendor.lock.json`.
 The CMake wrappers select the BK7258 AOSL sources explicitly, without additional compiler

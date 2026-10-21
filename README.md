@@ -83,9 +83,10 @@ This changes source ownership and build integration without upgrading the BK7258
 the RTSA binary with the BK7259 version. See [official dependencies](docs/OFFICIAL_DEPENDENCIES.md)
 for the patch scope and update procedure.
 
-The BK725x platform and AOSL snapshots match the published R1 baseline
-[`0db7814`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/0db7814501093d67cd614944996832c018c31f99/components/mybot).
-The RTSA library is preserved byte-for-byte from that baseline; see
+The BK725x platform retains the published R1 baseline
+[`6f77b38`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/6f77b3853ca9a13fd2597e80ee9c494ab8c11812/components/mybot/mybot_sdk/platforms/bk725x),
+with `mybot_assets.c` regenerated for the updated pairing audio described below.
+The AOSL snapshot and original RTSA library retain their published inputs; see
 [snapshot provenance](components/mybot/SNAPSHOTS.md).
 The SDK `include/` and `src/` match the official
 [agent-studio-device-firmware v1.3.0](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/v1.3.0)
@@ -166,8 +167,9 @@ The generated project's `build/bk7258/mybot/package/` directory also contains `a
 `app_pack.rbl` (CP/AP OTA package), and `build_summary.txt` (memory usage report). Individual
 CP and AP images are under `build/bk7258/mybot/bk7258/` and `build/bk7258/mybot/bk7258_ap/`.
 
-Both language builds passed on 2026-10-19; hardware testing remains outstanding. See the
-[validation record](docs/OFFICIAL_DEPENDENCIES.md#validation) for checks and firmware hashes.
+The input update records successful Chinese and English builds on 2026-10-21; these are
+historical results, and the complete firmware build has not been rerun for this update. Hardware
+testing remains outstanding. See the [validation record](docs/OFFICIAL_DEPENDENCIES.md#validation).
 
 ## Flash and run
 
@@ -304,7 +306,6 @@ terms of use, including but not limited to:
 - [bk_solution_ai license](bk_solution_ai/LICENSE)
 - [agent-studio-device-firmware SDK license](components/mybot/mybot_sdk/LICENSE)
 - [AOSL license and additional terms](components/mybot/mybot_aosl/aosl/LICENSE)
-- [Prompt asset license](projects/mybot/assets/LICENSE.xiaozhi-esp32)
 - [agent-studio-device-firmware third-party notices](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/THIRD_PARTY_NOTICES.md)
 
 Prebuilt binaries such as Agora RTSA may be subject to evaluation periods, redistribution

@@ -11,9 +11,12 @@
       "ref": "refs/tags/v1.3.0",
       "platform_snapshot": {
         "repository": "https://github.com/AgoraIO-Community/agora-r1-devkit.git",
-        "commit": "0db7814501093d67cd614944996832c018c31f99",
+        "commit": "6f77b3853ca9a13fd2597e80ee9c494ab8c11812",
         "path": "components/mybot/mybot_sdk/platforms/bk725x",
-        "tree": "140a4036df5c3dafcaff8deb3828ec354ed3cfc4"
+        "tree": "140a4036df5c3dafcaff8deb3828ec354ed3cfc4",
+        "generated_overrides": [
+          "modules/storage/mybot_assets.c"
+        ]
       }
     },
     "mybot_aosl": {
@@ -236,7 +239,7 @@
     "mybot_sdk/platforms/bk725x/modules/network/mybot_wifi_credentials.h": "b385a3b48342036b39feccc55aa628886afbe7170237da7ad5ade58678a11843",
     "mybot_sdk/platforms/bk725x/modules/network/mybot_wifi_runtime.c": "077682b39e95231d33f59398ba0fe9291c2880929e2839bc6d828f45f8593fc8",
     "mybot_sdk/platforms/bk725x/modules/network/mybot_wifi_runtime.h": "97e7ee1f41cf517d042624fe6bcb50d9de4195c5d0b469ca94ed2aea0006b855",
-    "mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.c": "f70f292a78a431d4275db07265c1956b20baba912eebd03ca220be37b372ec14",
+    "mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.c": "77f263e55b659b31a571e055389ee76b642070efa03337b5c4c77b4009de4f0e",
     "mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.h": "afd4a7798ac9a7e74afbdbe9be1accc8b2b35505bd207c71ad194b262396623e",
     "mybot_sdk/platforms/bk725x/modules/storage/mybot_kv_bk_env.c": "80fd7640cfc0d8032e5147ed4a937c71083e4e6ad49ab064b262b9549fd73ee4",
     "mybot_sdk/platforms/bk725x/modules/storage/mybot_kv_bk_env.h": "91c67c71c92cedcc10d4303d12597f80100876670fcc0e74d36f49c6e3efb879",
