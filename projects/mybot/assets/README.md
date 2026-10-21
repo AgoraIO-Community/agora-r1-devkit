@@ -6,8 +6,7 @@
 `components/mybot/mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.c`；该源文件随 AP 固件一起编译，设备直接从
 固件中的只读数组读取并解码语音，不需要在 SD 卡上保存资源文件。
 
-生成器只收集 `locales/**/*.ogg`。`LICENSE.xiaozhi-esp32` 和本说明文件不会被
-编译进固件。
+生成器只收集 `locales/**/*.ogg`，许可证和本说明文件不会被编译进固件。
 
 ## 音频格式
 
@@ -24,9 +23,14 @@
 - `prompt.ogg` 与 `0.ogg`~`9.ogg`：播报配对码
   （`mybot_announce_pcm_bk725x.c` 的 `sound_file_name()`）。
 
-音频内容源自 MIT 协议的 `xiaozhi-esp32` 项目对应 locale 资源；配对码文件来自
-Linux mybot demo（文档标注为同一 `xiaozhi-esp32` 资源的衍生）。再分发必须保留
-`LICENSE.xiaozhi-esp32`。
+`prompt.ogg` 与 `0.ogg`~`9.ogg` 共 22 个文件，取自
+[agent-studio-device-firmware 提示音资源](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/c5215b77321fe720b23ed78f313cc0452881d562/assets/locales)，
+提交 `c5215b77321fe720b23ed78f313cc0452881d562`，路径 `assets/locales/<lang>/*.pcm`。
+维护者已确认这些替换资源为自有或已获授权资源。使用本项目现有脚本将 16 kHz 单声道
+s16le PCM 转换为 OGG，准确来源和编码参数记录于 `components/mybot/snapshots.json`。
+
+中英文 `wificonfig.ogg` 和 `success.ogg` 共 4 个配网提示音保留原始字节。再分发时需保留
+[配网音频许可](LICENSE.audio)中的完整 MIT 许可及版权声明，该许可对应这 4 个文件。
 
 ## 修改现有语音
 

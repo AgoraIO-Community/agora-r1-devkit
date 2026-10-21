@@ -1,15 +1,20 @@
 # BK7258 official dependencies
 
 The BK7258 firmware uses official Beken submodules and keeps product code in this repository.
-The BK725x platform and AOSL files match the published
-[R1 snapshot at `0db7814`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/0db7814501093d67cd614944996832c018c31f99/components/mybot).
-The RTSA library is preserved byte-for-byte from that fixed snapshot, as described in
+The BK725x platform retains the published
+[R1 snapshot at `6f77b38`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/6f77b3853ca9a13fd2597e80ee9c494ab8c11812/components/mybot/mybot_sdk/platforms/bk725x),
+with `mybot_assets.c` regenerated for the current pairing audio. The AOSL snapshot and
+original RTSA library retain their published inputs, as described in
 [snapshot provenance](../components/mybot/SNAPSHOTS.md).
 
 The SDK `include/` and `src/` match official
 [agent-studio-device-firmware v1.3.0](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/v1.3.0),
 commit `32ac74bc59cb72db70e9a68337753561b59b13d0`. Its official ref, source trees and
 archive checksum are recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
+The 22 Chinese and English pairing prompt/digit PCM files come from official
+agent-studio-device-firmware commit
+`c5215b77321fe720b23ed78f313cc0452881d562` and are converted to Opus-in-Ogg with
+the existing project settings. Their separate provenance is recorded in `snapshots.json`.
 
 ## Fixed SDK baselines
 
@@ -18,6 +23,7 @@ archive checksum are recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
 | `bk_avdk_smp` | <https://github.com/bekencorp/bk_avdk_smp> | `d2ded037798530175e5dc5cde6fa1878f5d5ef35` |
 | `bk_solution_ai` | <https://github.com/bekencorp/bk_solution_ai> | `5e3ad9e818d3a3962eb45db23fd71b61238db5af` |
 | SDK core | <https://github.com/AgoraIO-Community/agent-studio-device-firmware> | `32ac74bc59cb72db70e9a68337753561b59b13d0` (`v1.3.0`) |
+| Pairing audio | <https://github.com/AgoraIO-Community/agent-studio-device-firmware> | `c5215b77321fe720b23ed78f313cc0452881d562` |
 
 The Beken commits pin the platform dependencies; the SDK core is locked independently to its
 official release. The top-level gitlinks pin the Beken commits; routine setup uses
@@ -142,26 +148,40 @@ Review source and binary differences before accepting new checksums.
 
 ## Validation
 
-The SDK mapping, all 256 snapshot checksums, and 30 host tests are checked locally.
-The SDK code and prebuilt RTSA library remain unchanged.
+To check the delivered inputs from the repository root, run:
 
-The following firmware build results were recorded on 2026-10-19 for the same SDK and
-unchanged RTSA library. The provenance update does not rerun the complete firmware build:
+```bash
+python3 scripts/check_sources.py
+python3 -m unittest discover -s scripts -p 'test_*.py'
+```
 
-- All 256 source and binary snapshot checksums passed, together with 30 host tests.
-- The upstream `mybot_http_client_test`, `mybot_json_test`, and
-  `mybot_public_headers_test` passed, including the runtime SDK version check.
-- A fresh `python3 scripts/build_all.py` completed both AP/CP builds and complete firmware
-  packages: Chinese in 39 seconds, English in 39 seconds, total elapsed time 1 minute 19 seconds.
-- The generated AP configuration and firmware were checked for the selected language, matching
-  regional service endpoint, and exactly one corresponding TLS trust anchor: DigiCert Global
-  Root G2 for Chinese and Go Daddy Root Certificate Authority - G2 for English.
+The source check verifies the 256 managed snapshot files and pinned official dependency
+state. The host suite contains 30 tests. The SDK core remains the 1.3.0 release snapshot;
+the original prebuilt RTSA library is unchanged. The generated asset array must match all
+26 project Ogg files after a prompt update.
+
+The input update records the following results from 2026-10-21. These are historical build
+records; the complete firmware build has not been rerun for this update:
+
+- All 256 source and binary snapshot checksums and 30 host tests passed.
+- The SDK `include/` and `src/` trees matched the selected source, apart from the generated
+  version header; these core trees are also identical to the official 1.3.0 release.
+- All 22 updated pairing audio files passed Opus header, mono channel, pre-skip and final
+  granule checks. Decoding to 16 kHz mono s16 produced the source PCM sample counts.
+  The generated C arrays matched all 26 project Ogg assets (76,900 bytes total).
+- `python3 scripts/build_all.py` completed both AP/CP builds and complete firmware packages:
+  Chinese in 43 seconds, English in 40 seconds, total elapsed time 1 minute 24 seconds.
+- The generated AP configuration and firmware were checked for the selected language,
+  matching regional service endpoint, and exactly one corresponding TLS trust anchor:
+  DigiCert Global Root G2 for Chinese and Go Daddy Root Certificate Authority - G2 for English.
 - Both official submodules retained clean tracked working trees, and the source project's
   English configuration remained unchanged.
 
-| Complete flash image | SHA-256 |
+| Historical complete flash image | SHA-256 |
 | --- | --- |
-| `releases/bk7258-zh-CN.bin` | `266a9c780829fb8b4b173d2a6d860dac6687654bb1a032bc366bae8b1c2cce32` |
-| `releases/bk7258-en-US.bin` | `b92ccc0a09c65b1b40293fec20a617aa05b8462c8a3eca585a16e3c67ec386aa` |
+| `releases/bk7258-zh-CN.bin` | `68671662dfb15ffcc92465a438c2a01629f3335f9abff0699480f377d3928c4e` |
+| `releases/bk7258-en-US.bin` | `f2379f81e0eca043dce6313fe394eca33ea758dd76b5b47454dd6ced1dfb8680` |
 
-Board testing has not been performed for this SDK refresh.
+The `releases/` files are build outputs created by the commands above; they are not committed
+artifacts. The historical hashes do not verify a newly generated local image. Board testing
+has not been performed for this audio update.

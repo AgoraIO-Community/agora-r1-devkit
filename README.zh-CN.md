@@ -75,9 +75,10 @@ BK7258 固件采用 AP/CP 双核结构：
 本次迁移调整源码归属和构建集成，不升级 BK7258 SDK，也不替换为 BK7259 的 RTSA
 二进制。补丁范围和版本更新方式见[官方依赖说明](docs/OFFICIAL_DEPENDENCIES.md)。
 
-BK725x 平台适配和 AOSL 快照与已发布的 R1 基线
-[`0db7814`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/0db7814501093d67cd614944996832c018c31f99/components/mybot)
-一致。RTSA 静态库按该基线的原始字节保留，来源见
+BK725x 平台适配保留已发布的 R1 基线
+[`6f77b38`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/6f77b3853ca9a13fd2597e80ee9c494ab8c11812/components/mybot/mybot_sdk/platforms/bk725x)，
+其中 `mybot_assets.c` 已按下文所述的配对提示音重新生成。
+AOSL 快照与 RTSA 静态库保留已发布输入及原始库字节，来源见
 [快照说明](components/mybot/SNAPSHOTS.md)。
 SDK 的 `include/`、`src/` 与官方
 [agent-studio-device-firmware v1.3.0](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/v1.3.0)
@@ -157,8 +158,9 @@ python3 scripts/prepare_vendor.py --language en-US
 `app_pack.rbl` 和内存报告 `build_summary.txt`。CP、AP 独立镜像分别位于生成工程的
 `build/bk7258/mybot/bk7258/` 和 `build/bk7258/mybot/bk7258_ap/`。
 
-2026-10-19 已完成中英文两个版本的构建验证，尚未进行板端测试。
-检查内容与固件哈希见[验证记录](docs/OFFICIAL_DEPENDENCIES.md#validation)。
+本次输入更新保留了 2026-10-21 中英文构建成功的历史记录，本次更新没有重新执行
+完整固件构建，尚未进行板端测试。检查内容与历史固件哈希见
+[验证记录](docs/OFFICIAL_DEPENDENCIES.md#validation)。
 
 ## 烧录与运行
 
@@ -219,6 +221,10 @@ GPIO、显示屏和音频外设连接属于板级配置；适配其他 BK7258 �
 提示音位于 `projects/mybot/assets/locales/`，格式为 16 kHz 单声道
 Opus-in-Ogg。资源以只读 C 数组编入 AP 固件，不依赖 SD 卡，也不使用独立的
 `assets_data` 分区；解码后的 PCM 缓冲区在运行时从 PSRAM 分配。
+中英文配对提示及数字语音共 22 个文件，取自 agent-studio-device-firmware 提交
+[`c5215b7`](https://github.com/AgoraIO-Community/agent-studio-device-firmware/tree/c5215b77321fe720b23ed78f313cc0452881d562/assets/locales)
+的 16 kHz 单声道 PCM 资源，沿用现有 Opus 参数转换。配网提示音 `success.ogg` 和
+`wificonfig.ogg` 保持不变。
 
 修改或新增 OGG 后，需要在构建前手动重新生成数组：
 
@@ -285,7 +291,7 @@ git submodule update --init --recursive
 - [bk_solution_ai 许可证](bk_solution_ai/LICENSE)
 - [agent-studio-device-firmware SDK 许可证](components/mybot/mybot_sdk/LICENSE)
 - [AOSL 许可证及附加条款](components/mybot/mybot_aosl/aosl/LICENSE)
-- [提示音资源许可证](projects/mybot/assets/LICENSE.xiaozhi-esp32)
+- [配网音频许可](projects/mybot/assets/LICENSE.audio)
 - [agent-studio-device-firmware 第三方依赖说明](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/THIRD_PARTY_NOTICES.md)
 
 Agora RTSA 等预编译二进制可能受试用期限、再分发和商业授权限制。将本项目用于产品或
