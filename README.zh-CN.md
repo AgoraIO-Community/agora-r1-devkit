@@ -72,8 +72,7 @@ BK7258 固件采用 AP/CP 双核结构：
 
 官方 SDK 基线固定为 `bk_avdk_smp` 的 `d2ded037798530175e5dc5cde6fa1878f5d5ef35`
 和 `bk_solution_ai` 的 `5e3ad9e818d3a3962eb45db23fd71b61238db5af`。
-本次迁移调整源码归属和构建集成，不升级 BK7258 SDK，也不替换为 BK7259 的 RTSA
-二进制。补丁范围和版本更新方式见[官方依赖说明](docs/OFFICIAL_DEPENDENCIES.md)。
+补丁范围和版本更新方式见[官方依赖说明](docs/OFFICIAL_DEPENDENCIES.md)。
 
 BK725x 平台适配保留已发布的 R1 基线
 [`6f77b38`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/6f77b3853ca9a13fd2597e80ee9c494ab8c11812/components/mybot/mybot_sdk/platforms/bk725x)，

@@ -413,8 +413,6 @@ builds are documented in this repository.
 - [docs/PORTING.md](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.md) ([简体中文](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/PORTING.zh-CN.md)) — porting guide and
   integration sequence and acceptance checklist
 - [R1 README](../../../README.md) and [BK725x platform guide](platforms/bk725x/README.md) — current BK7258 integration
-- [agora-r2-standard-devkit](https://github.com/AgoraIO-Community/agora-r2-standard-devkit) — BK7259 reference firmware project
-- [agora-esp32-devkit](https://github.com/AgoraIO-Community/agora-esp32-devkit) — ESP32 cross-platform reference project
 - [docs/EMBEDDED.md](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/EMBEDDED.md) ([简体中文](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/EMBEDDED.zh-CN.md)) — footprint, memory,
   thread/stack, timing, power and logging guidance for MCU integrators
 - [docs/RELEASING.md](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/RELEASING.md) ([简体中文](https://github.com/AgoraIO-Community/agent-studio-device-firmware/blob/main/docs/RELEASING.zh-CN.md)) — release process

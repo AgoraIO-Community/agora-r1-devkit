@@ -3,7 +3,7 @@
 The BK7258 firmware uses official Beken submodules and keeps product code in this repository.
 The BK725x platform retains the published
 [R1 snapshot at `6f77b38`](https://github.com/AgoraIO-Community/agora-r1-devkit/tree/6f77b3853ca9a13fd2597e80ee9c494ab8c11812/components/mybot/mybot_sdk/platforms/bk725x),
-with `mybot_assets.c` regenerated for the current pairing audio. The AOSL snapshot and
+with `mybot_assets.c` regenerated for the current prompt audio. The AOSL snapshot and
 original RTSA library retain their published inputs, as described in
 [snapshot provenance](../components/mybot/SNAPSHOTS.md).
 
@@ -37,10 +37,8 @@ changes before creating a build workspace.
 | `components/mybot/mybot_aosl/` | BK7258 AOSL runtime and platform adaptation from the published R1 baseline |
 | `components/mybot/mybot_rtsa/` | BK7258 RTSA header and unchanged library, build `1292388`, from the published R1 baseline |
 
-The integration uses the BK7259 repository's approach of separating official dependencies from
-product code. It retains the BK7258 runtime versions, board configuration, and AP/CP architecture.
-The BK7259 RTSA binary is not substituted. Runtime snapshots retain their licenses and must be
-reviewed separately when updated.
+Official dependencies and local product code are maintained separately. Runtime snapshots use
+the BK7258 board configuration and AP/CP architecture and are reviewed independently when updated.
 
 The local component wrappers build for `bk7258_ap` only. AOSL keeps its original 48-source
 selection without additional compiler definitions. `CONFIG_AGORA_IOT_SDK` stays disabled so the
@@ -155,8 +153,8 @@ state. The host suite contains 30 tests. The SDK core remains the 1.3.0 release 
 the original prebuilt RTSA library is unchanged. The generated asset array must match all
 26 project Ogg files after a prompt update.
 
-The input update records the following results from 2026-10-21. These are historical build
-records; the complete firmware build has not been rerun for this update:
+The following results were recorded on 2026-10-21 before the provisioning-entry prompt changes.
+These are historical build records; the complete firmware build has not been rerun for this update:
 
 - All 256 source and binary snapshot checksums and 30 host tests passed.
 - The SDK `include/` and `src/` trees matched the selected source, apart from the generated
