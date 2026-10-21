@@ -84,7 +84,7 @@ for the patch scope and update procedure.
 The project, BK725x adapters, AOSL, and RTSA inputs preserve main revision `04c8283` and its pinned
 Solution `438f1325` and AVDK `a9529f12` snapshots. Their sources and binaries are recorded by
 checksum in `components/mybot/snapshots.json`.
-The mybot SDK `include/` and `src/` snapshot is updated separately to upstream `58f0ef9`
+The mybot SDK `include/` and `src/` snapshot is updated separately to upstream `3f9a1ad`
 (version 1.3.0), as recorded in `components/mybot/mybot_sdk/SDK_REVISION`.
 
 The local runtime components build for AP only. `CONFIG_AGORA_IOT_SDK` stays disabled because
@@ -160,7 +160,7 @@ The generated project's `build/bk7258/mybot/package/` directory also contains `a
 `app_pack.rbl` (CP/AP OTA package), and `build_summary.txt` (memory usage report). Individual
 CP and AP images are under `build/bk7258/mybot/bk7258/` and `build/bk7258/mybot/bk7258_ap/`.
 
-Both language builds passed on 2026-10-19; hardware testing remains outstanding. See the
+Both language builds passed on 2026-10-21; hardware testing remains outstanding. See the
 [validation record](docs/OFFICIAL_DEPENDENCIES.md#validation) for checks and firmware hashes.
 
 ## Flash and run
@@ -227,6 +227,8 @@ Prompt assets are stored under `projects/mybot/assets/locales/` as 16 kHz mono
 Opus-in-Ogg files. They are compiled into the AP firmware as read-only C arrays, require no SD
 card, and use no separate `assets_data` partition. Decoded PCM buffers are allocated from PSRAM
 at runtime.
+The Chinese and English pairing prompt and digit sounds are converted from SDK `3f9a1ad` PCM
+assets using the project's existing Opus settings.
 
 After modifying or adding an OGG file, regenerate the C arrays manually before building:
 
@@ -298,7 +300,6 @@ terms of use, including but not limited to:
 - [bk_solution_ai license](bk_solution_ai/LICENSE)
 - [mybot SDK license](components/mybot/mybot_sdk/LICENSE)
 - [AOSL license and additional terms](components/mybot/mybot_aosl/aosl/LICENSE)
-- [Prompt asset license](projects/mybot/assets/LICENSE.xiaozhi-esp32)
 - [mybot third-party notices](https://github.com/junlon2006/mybot/blob/main/THIRD_PARTY_NOTICES.md)
 
 Prebuilt binaries such as Agora RTSA may be subject to evaluation periods, redistribution

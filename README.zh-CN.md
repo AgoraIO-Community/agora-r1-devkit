@@ -76,7 +76,7 @@ BK7258 固件采用 AP/CP 双核结构：
 工程、BK725x 平台适配、AOSL 和 RTSA 输入保留主仓迁移基线 `04c8283` 及其固定的 Solution
 `438f1325`、AVDK `a9529f12` 快照。源码和二进制的校验和记录于
 `components/mybot/snapshots.json`。
-mybot SDK 的 `include/`、`src/` 快照单独更新至上游 `58f0ef9`（版本 1.3.0），
+mybot SDK 的 `include/`、`src/` 快照单独更新至上游 `3f9a1ad`（版本 1.3.0），
 详见 `components/mybot/mybot_sdk/SDK_REVISION`。
 
 本地运行时组件只在 AP 目标编译；`mybot_aosl` 和 `mybot_rtsa` 提供工程所需的运行时，
@@ -151,7 +151,7 @@ python3 scripts/prepare_vendor.py --language en-US
 `app_pack.rbl` 和内存报告 `build_summary.txt`。CP、AP 独立镜像分别位于生成工程的
 `build/bk7258/mybot/bk7258/` 和 `build/bk7258/mybot/bk7258_ap/`。
 
-2026-10-19 已完成中英文两个版本的构建验证，尚未进行板端测试。
+2026-10-21 已完成中英文两个版本的构建验证，尚未进行板端测试。
 检查内容与固件哈希见[验证记录](docs/OFFICIAL_DEPENDENCIES.md#validation)。
 
 ## 烧录与运行
@@ -213,6 +213,7 @@ mybot Kconfig 当前提供：
 提示音位于 `projects/mybot/assets/locales/`，格式为 16 kHz 单声道
 Opus-in-Ogg。资源以只读 C 数组编入 AP 固件，不依赖 SD 卡，也不使用独立的
 `assets_data` 分区；解码后的 PCM 缓冲区在运行时从 PSRAM 分配。
+中英文配对提示及数字语音取自 SDK `3f9a1ad` 的 PCM 资源，沿用现有 Opus 参数转换。
 
 修改或新增 OGG 后，需要在构建前手动重新生成数组：
 
@@ -279,7 +280,6 @@ git submodule update --init --recursive
 - [bk_solution_ai 许可证](bk_solution_ai/LICENSE)
 - [mybot SDK 许可证](components/mybot/mybot_sdk/LICENSE)
 - [AOSL 许可证及附加条款](components/mybot/mybot_aosl/aosl/LICENSE)
-- [提示音资源许可证](projects/mybot/assets/LICENSE.xiaozhi-esp32)
 - [mybot 第三方依赖说明](https://github.com/junlon2006/mybot/blob/main/THIRD_PARTY_NOTICES.md)
 
 Agora RTSA 等预编译二进制可能受试用期限、再分发和商业授权限制。将本项目用于产品或

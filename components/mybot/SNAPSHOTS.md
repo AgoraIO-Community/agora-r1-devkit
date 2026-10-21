@@ -5,7 +5,11 @@ The managed runtime files in `snapshots.json` retain the following provenance:
   Its platform code retains this baseline. The SDK `include/` and `src/` snapshots
   are version `1.3.0`, synchronized directly from
   `https://github.com/junlon2006/mybot.git` commit
-  `58f0ef9c14be9f159b1dc167bf0f035983b25117`; see `mybot_sdk/SDK_REVISION`.
+  `3f9a1add55f1b946d59655b5b88f4662d780fb31`; see `mybot_sdk/SDK_REVISION`.
+* Chinese and English pairing-code prompt/digit audio: the same MyBot SDK commit,
+  `assets/locales`. Its 22 raw 16 kHz mono PCM files are converted to Opus-in-Ogg
+  using the project's existing script and embedded through generated `mybot_assets.c`.
+  The provisioning `success.ogg` and `wificonfig.ogg` retain their existing sources.
 * AOSL and the BK725x HAL: `https://github.com/junlon2006/bk_avdk_smp.git`, commit
   `a9529f1224747604192b46668471d3473d80050c`,
   `ap/components/bk_thirdparty/agora-iot-sdk/hal/aosl`.
