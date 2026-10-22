@@ -4,7 +4,7 @@ The aosl library provides an abstract implementation of low-level common compone
 threads, IO, logging, memory, etc. Its public API headers are in [include/api](include/api/).
 
 This directory is the AOSL snapshot used by [agora-r1-devkit](../../../../README.md). Its BK725x
-HAL and source provenance are recorded in [SNAPSHOTS.md](../../SNAPSHOTS.md); the AOSL licensing
+HAL and source provenance are recorded in [snapshots.json](../../snapshots.json); the AOSL licensing
 terms remain in [LICENSE](LICENSE). The public [AOSL upstream project](https://github.com/AgoraIO-Community/aosl)
 provides information about other platform ports.
 
@@ -29,7 +29,7 @@ atomic, file, iomp, socket, memory, thread, time, etc. Use the included
 R1 builds AOSL for the BK7258 AP through the parent
 [Armino component wrapper](../CMakeLists.txt). That wrapper selects the preserved source files,
 exports `aosl/include`, `aosl/platform/include`, and `aosl/platform/src/bk725x/config`, and declares
-the required BK components. Follow the [R1 firmware build instructions](../../../../README.md#build-the-firmware)
+the required BK components. Follow the [R1 firmware build instructions](../../../../README.md#build)
 for the pinned dependencies and BK toolchain.
 
 The [standalone CMake file](CMakeLists.txt) retains the upstream Linux default, but this snapshot
