@@ -1,285 +1,173 @@
 # mybot-bk7258
 
-[![License](https://img.shields.io/github/license/junlon2006/mybot-bk7258)](LICENSE)
-[![Upstream](https://img.shields.io/badge/upstream-mybot-0969da)](https://github.com/junlon2006/mybot)
-[![Platform](https://img.shields.io/badge/platform-BK7258-2f6f4e)](https://github.com/bekencorp/bk_avdk_smp)
-
 **简体中文 | [English](README.md)**
 
-**mybot-bk7258** 是开源 AI 语音对话 SDK
-[mybot](https://github.com/junlon2006/mybot) 面向 BK7258 SMP 平台的参考实现。
-本仓库通过 Git submodule 固定引用 BK 官方 SDK 与 AI 解决方案；mybot 固件工程、平台
-适配、运行时快照和 SDK 补丁由本仓库维护，用于复现构建、平台开发和社区协作。
+这是 [MyBot](https://github.com/junlon2006/mybot) AI 语音 SDK 的 BK7258 固件
+参考实现。仓库组合了固定版本的 Beken SDK 子模块、本地 MyBot SDK 快照、
+BK725x 平台适配以及用于构建 AP、CP 镜像的固件工程。
 
-> 本项目当前定位为 BK7258 参考实现，仍在持续开发中。用于量产产品前，请结合实际硬件
-> 完成板级适配、安全审查、稳定性验证，并确认所有第三方组件的许可与商业使用条件。
-
-## 与上游 mybot 的关系
-
-[mybot](https://github.com/junlon2006/mybot) 是面向边缘设备的跨平台 AI 语音对话 SDK。
-其核心采用 C99 编写，依赖 AOSL 提供可移植运行时，并通过平台 `ops` 接口获取 Wi-Fi、
-持久化存储、按键、显示、音频和网络传输等设备能力。
-
-本地快照采用 mybot SDK 1.3.0，并保留最新 BK7258 源码基线中的音频生命周期、
-设备身份实现和 LCD 状态标记。
-
-本仓库不重新定义 mybot SDK，而是提供 BK7258 平台所需的完整实现：
-
-- BK7258 AP/CP 双核启动、内存和 Flash 分区配置。
-- BK725x Wi-Fi APSTA 配网、网络重连和凭据持久化。
-- 麦克风采集、扬声器播放、音量控制及音频电源管理。
-- 按键、双屏显示、EasyFlash KV、HTTPS 和设备 UID 适配。
-- 基于 Agora RTSA 的全双工 AI 语音会话，并支持用户打断 AI 回复。
-- 配网提示和配对码播报所需的中英文内嵌 OGG 资源。
-- 完整烧录固件以及同时包含 CP、AP 的 OTA 升级包。
-
-设备服务端、Agora RTC 云服务和云端 AI Agent 不属于本仓库。运行完整业务流程需要接入
-与 mybot 协议兼容的设备服务。
-
-## 系统架构
-
-```mermaid
-flowchart LR
-    user["用户"] <--> device["BK7258 设备"]
-    device --> platform["BK725x 平台适配<br/>Wi-Fi · Audio · Key · LCD · KV · HTTPS"]
-    platform --> core["mybot SDK<br/>配网 · 配对 · 会话状态机"]
-    core <--> rtc["Agora RTC"]
-    rtc <--> agent["云端 AI Agent<br/>ASR · LLM · TTS"]
-```
-
-BK7258 固件采用 AP/CP 双核结构：
-
-- **CP** 负责基础系统初始化和 SMP 启动控制。
-- **AP** 初始化媒体服务并启动 mybot controller，承载平台适配、设备生命周期、网络、
-  音频、显示和 RTC 会话。
-- **Controller** 根据已保存的 Wi-Fi 凭据选择 APSTA 配网或普通 STA 模式；网络连接后
-  异步启动 mybot SDK，并负责断网恢复及异常重启。
+本项目当前是开发与移植基线。量产前仍需完成目标板适配、安全审查、硬件验证
+和第三方许可核查。设备服务、Agora 云服务和云端 AI Agent 均为外部依赖。
 
 ## 仓库结构
 
-| 路径 | 职责 | 来源 |
-| --- | --- | --- |
-| `bk_avdk_smp/` | BK7258 SMP SDK 与平台基础组件 | [bekencorp/bk_avdk_smp](https://github.com/bekencorp/bk_avdk_smp) |
-| `bk_solution_ai/` | BK 官方 AI 解决方案组件 | [bekencorp/bk_solution_ai](https://github.com/bekencorp/bk_solution_ai) |
-| `projects/mybot/` | AP/CP 入口、板级配置、分区表和提示音资源 | 本仓库 |
-| `components/mybot/mybot_sdk/` | mybot SDK 1.3.0 及 `platforms/bk725x` 平台实现 | 本地源码快照 |
-| `components/mybot/mybot_aosl/` | AOSL 运行时及 BK7258 适配 | 本地源码快照 |
-| `components/mybot/mybot_rtsa/` | Agora RTSA 头文件与二进制，build `1292388` | 本地快照 |
-| `patches/` | 准备 SDK 时应用的小范围补丁 | 本仓库 |
-| `scripts/` | 依赖准备和分语言固件构建 | 本仓库 |
+| 路径 | 内容 |
+| --- | --- |
+| `bk_avdk_smp/` | 固定版本的 Beken AVDK 子模块 |
+| `bk_solution_ai/` | 固定版本的 Beken Solution 子模块 |
+| `projects/mybot/` | BK7258 AP/CP 工程、板级配置、分区表和提示音资源 |
+| `components/mybot/mybot_sdk/` | MyBot SDK 快照和 `platforms/bk725x` 平台适配 |
+| `components/mybot/mybot_aosl/` | AOSL 运行时快照和 BK725x HAL |
+| `components/mybot/mybot_rtsa/` | Agora RTSA 头文件和 ARM 库 |
+| `patches/` | 构建生成目录时应用的 AVDK 补丁 |
+| `scripts/` | 源码准备、构建和校验脚本 |
 
-官方 SDK 基线固定为 `bk_avdk_smp` 的 `d2ded037798530175e5dc5cde6fa1878f5d5ef35`
-和 `bk_solution_ai` 的 `5e3ad9e818d3a3962eb45db23fd71b61238db5af`。
-补丁范围和版本更新方式见[官方依赖说明](docs/OFFICIAL_DEPENDENCIES.md)。
-
-工程、BK725x 平台适配、AOSL 和 RTSA 输入保留主仓迁移基线 `04c8283` 及其固定的 Solution
-`438f1325`、AVDK `a9529f12` 快照。源码和二进制的校验和记录于
-`components/mybot/snapshots.json`。
-mybot SDK 的 `include/`、`src/` 快照单独更新至上游 `3f9a1ad`（版本 1.3.0），
-详见 `components/mybot/mybot_sdk/SDK_REVISION`。
-
-本地运行时组件只在 AP 目标编译；`mybot_aosl` 和 `mybot_rtsa` 提供工程所需的运行时，
-因此保持 `CONFIG_AGORA_IOT_SDK` 关闭。
+BK7258 固件采用 AP/CP 分工。AP 入口初始化媒体服务并启动 MyBot controller；
+controller 负责 APSTA 配网、STA 连接、凭据持久化以及 MyBot 启停。配对、
+会话状态、音频流和 RTC 会话由 SDK 通过已注册的 BK725x 平台描述符处理。
 
 ## 环境要求
 
-- Git，并支持 Git submodule。
-- Python 3 和 GNU Make。
-- Linux 构建环境及 `bk_avdk_smp` 所需的交叉编译工具链。
-- BK7258 开发板或采用相同外设连接的兼容硬件。
-- 可用的 mybot 设备服务和 Agora 服务配置。
-
-BK7258 SDK 环境和烧录工具的安装方法请参考
-[Beken BK7258 SMP 文档](https://docs.bekencorp.com/arminodoc/bk_avdk_smp/smp_doc/bk7258/zh_CN/v3.1.1/index.html)。
+- 支持 submodule 的 Git。
+- Python 3、GNU Make 和 Beken 构建环境。
+- Armino 构建所需的 `click_option_group`。
+- 板级与外设配置相匹配的 BK7258 开发板。
+- 可用的 MyBot 设备服务和 Agora 服务配置。
 
 ## 获取源码
-
-推荐通过 HTTPS 递归克隆：
 
 ```bash
 git clone --recurse-submodules https://github.com/junlon2006/mybot-bk7258.git
 cd mybot-bk7258
 ```
 
-已经克隆顶层仓库但尚未获取子模块时执行：
+已有顶层仓库时执行：
 
 ```bash
 git submodule sync --recursive
 git submodule update --init --recursive
 ```
 
-克隆完成后，可用以下命令确认固定版本：
+日常构建不要使用 `git submodule update --remote`。依赖版本由已提交的
+gitlink 决定，`.gitmodules` 中的分支名不能替代 gitlink。精确提交、补丁和
+本地快照来源见[官方依赖说明](docs/OFFICIAL_DEPENDENCIES.md)。
 
-```bash
-git submodule status
-```
+## 构建
 
-## 构建固件
-
-从本仓库根目录执行以下命令，构建中英文两个版本：
+在仓库根目录构建中英文两个版本：
 
 ```bash
 python3 scripts/build_all.py
 ```
 
-默认参数为 `--language both`，也可以单独构建一种语言：
+单独构建一种语言：
 
 ```bash
 python3 scripts/build_all.py --language zh-CN
 python3 scripts/build_all.py --language en-US
 ```
 
-脚本为每种语言准备独立的工程副本，应用本仓库维护的 SDK 补丁，然后编译 CP 和 AP。
-官方子模块的受 Git 跟踪文件保持干净，源码工程中的语言配置也不会被改写。完整烧录固件为：
+脚本会创建隔离的构建目录，应用 AVDK 补丁，在生成的工程副本中选择一种语言，
+并检查 AP 配置和固件。成功后写出以下未跟踪的构建产物：
 
-| 文件 | 用途 |
-| --- | --- |
-| `releases/bk7258-zh-CN.bin` | 包含 bootloader、CP 和 AP 的中文版固件 |
-| `releases/bk7258-en-US.bin` | 包含 bootloader、CP 和 AP 的英文版固件 |
+```text
+releases/bk7258-zh-CN.bin
+releases/bk7258-en-US.bin
+```
 
-脚本还支持 `--dry-run`、`--no-clean`、`--build-root` 和 `--output-root`，仅在所有
-请求的构建成功后发布固件。
-
-需要手动构建时，先准备一种语言，再执行脚本打印的 Make 命令：
+其他参数见 `python3 scripts/build_all.py --help`。如果只需准备一个变体并查看
+Make 命令而不编译：
 
 ```bash
 python3 scripts/prepare_vendor.py --language en-US
 ```
 
-生成工程的 `build/bk7258/mybot/package/` 下还包含 `all-app.bin`、CP/AP OTA 升级包
-`app_pack.rbl` 和内存报告 `build_summary.txt`。CP、AP 独立镜像分别位于生成工程的
-`build/bk7258/mybot/bk7258/` 和 `build/bk7258/mybot/bk7258_ap/`。
-
-2026-10-21 已完成中英文两个版本的构建验证，尚未进行板端测试。
-检查内容与固件哈希见[验证记录](docs/OFFICIAL_DEPENDENCIES.md#validation)。
+生成工程还会在 `build/bk7258/mybot/` 下产生 `all-app.bin`、`app_pack.rbl`、
+AP/CP 独立镜像和 `build_summary.txt`。这些均属于构建产物，不在本仓库中跟踪。
 
 ## 烧录与运行
 
-使用 Beken 烧录工具将所需语言的 `releases/bk7258-*.bin` 写入设备；它们分别复制自
-对应版本的完整 `all-app.bin`。具体烧录流程以所用开发板和
-[Beken 烧录文档](https://docs.bekencorp.com/arminodoc/bk_avdk_smp/smp_doc/bk7258/zh_CN/v3.1.1/get-started/index.html)
-为准。
+使用 Beken 烧录工具写入生成的 `releases/bk7258-<language>.bin`。该镜像复制自
+构建产生的完整 `all-app.bin`。
 
-设备启动后的参考流程如下：
+参考流程：
 
-1. 首次启动或没有有效 Wi-Fi 凭据时，设备进入 APSTA 配网模式并创建
-   `mybot-xxx` SoftAP。
-2. 连接该热点并访问 `http://192.168.4.1/`，选择目标网络并提交凭据。
-3. 设备连接网络后启动 mybot SDK，完成设备注册、配对和认证。
-4. 未认领设备会显示并播报配对码；完成认领后即可通过按键开始 AI 语音会话。
+1. 没有已保存的 Wi-Fi 凭据时，设备进入 APSTA 配网模式并创建 `mybot-xxx`
+   SoftAP。
+2. 连接该热点，打开 `http://192.168.4.1/` 并提交 Wi-Fi 凭据。
+3. STA 获得可用 IPv4 地址后，controller 启动 MyBot SDK，进行设备配对和认证。
+4. 设备完成认领后，可通过以下按键控制音量和会话。
 
-当前参考板按键定义如下：
+参考板按键：
 
-| GPIO | 操作 | 功能 |
+| GPIO | 输入 | 功能 |
 | --- | --- | --- |
 | GPIO13 | 短按 | 增大音量 |
 | GPIO8 | 短按 | 减小音量 |
 | GPIO12 | 短按 | 开始或结束会话 |
-| GPIO12 | 长按约 3 秒 | 重新进入配网模式 |
+| GPIO12 | 长按约 3 秒 | 停止 MyBot 并重新进入配网 |
 
-GPIO、显示屏和音频外设连接属于板级配置；适配其他 BK7258 硬件时需要同步修改配置和
-平台实现。
+GPIO、显示屏和音频连接属于板级配置；更换硬件时需要同步修改移植代码并重新验证。
 
 ## 配置
 
-主要工程配置位于：
+主要配置和布局文件：
 
-- AP：`projects/mybot/ap/config/bk7258_ap/config`
-- CP：`projects/mybot/cp/config/bk7258/config`
-- Flash 分区：`projects/mybot/partitions/bk7258/auto_partitions.csv`
-- SRAM/PSRAM：`projects/mybot/partitions/bk7258/ram_regions.csv`
+```text
+projects/mybot/ap/config/bk7258_ap/config
+projects/mybot/cp/config/bk7258/config
+projects/mybot/partitions/bk7258/auto_partitions.csv
+projects/mybot/partitions/bk7258/ram_regions.csv
+```
 
-mybot Kconfig 当前提供：
+MyBot Kconfig 必须且只能选择一种语言：
 
-- `CONFIG_MYBOT_LANGUAGE_ZH_CN`：中文服务区域和中文提示音。
-- `CONFIG_MYBOT_LANGUAGE_EN_US`：英文服务区域和英文提示音。
-- `CONFIG_MYBOT_DEBUG_CPU`：周期性输出 CPU 使用率诊断信息，默认关闭。
+| 配置 | 设备服务地址 | TLS 根证书 |
+| --- | --- | --- |
+| `CONFIG_MYBOT_LANGUAGE_ZH_CN` | `https://botstation.shengwang.cn/api` | DigiCert Global Root G2 |
+| `CONFIG_MYBOT_LANGUAGE_EN_US` | `https://botstation.agora.io/api` | Go Daddy Root Certificate Authority - G2 |
 
-语言选项会同时决定服务区域与提示音目录，两个语言选项必须且只能启用一个。
-源码配置保留英文选择；构建脚本在各自生成的工程副本中设置指定语言。上述构建命令
-不提供摄像头或视频版本选择。
+`CONFIG_MYBOT_DEBUG_CPU` 用于启用周期性 CPU 诊断线程，默认关闭。源码工程当前
+启用 `en-US`；构建脚本只修改生成工程副本中的语言选择。
 
-| 固件语言 | 设备服务区域 | 设备服务地址 | TLS 根证书 |
-| --- | --- | --- | --- |
-| `zh-CN` | 国内 | `https://botstation.shengwang.cn/api` | DigiCert Global Root G2 |
-| `en-US` | 海外 | `https://botstation.agora.io/api` | Go Daddy Root Certificate Authority - G2 |
+## 提示音资源
 
-服务地址按上游 SDK 的约定包含 `/api`，末尾不带 `/`。
-每个语言版本只编入对应服务区域的一个根证书。
+仓库在 `projects/mybot/assets/locales/{zh-CN,en-US}/` 下包含 26 个
+Opus-in-Ogg 提示音，通过
+`components/mybot/mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.c`
+编入 AP 镜像，不使用独立资源分区。
 
-## 内嵌语音资源
-
-提示音位于 `projects/mybot/assets/locales/`，格式为 16 kHz 单声道
-Opus-in-Ogg。资源以只读 C 数组编入 AP 固件，不依赖 SD 卡，也不使用独立的
-`assets_data` 分区；解码后的 PCM 缓冲区在运行时从 PSRAM 分配。
-中英文配对提示及数字语音取自 SDK `3f9a1ad` 的 PCM 资源，沿用现有 Opus 参数转换。
-
-修改或新增 OGG 后，需要在构建前手动重新生成数组：
+修改 Ogg 后需要重新生成 C 数组并更新快照校验值：
 
 ```bash
 python3 projects/mybot/scripts/generate_assets_c.py \
   projects/mybot/assets \
   components/mybot/mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.c
+sha256sum components/mybot/mybot_sdk/platforms/bk725x/modules/storage/mybot_assets.c
 ```
 
-有意修改源码或资源后，需审查源码差异，包括生成的 `mybot_assets.c`，再用 `sha256sum`
-计算修改文件的哈希，并更新 `components/mybot/snapshots.json` 中对应的 SHA-256 记录。
-构建只校验该清单，不会静默重新生成清单。
+格式、转换脚本及各文件用途见[提示音说明](projects/mybot/assets/README.md)。
 
-生成器只收集 `locales/**/*.ogg`。详细格式及更新流程见
-[`projects/mybot/assets/README.md`](projects/mybot/assets/README.md)。
+## 校验
 
-## 子模块版本管理
-
-普通使用者应使用顶层仓库固定的版本：
+构建或审查前执行：
 
 ```bash
-git pull --ff-only
-git submodule sync --recursive
-git submodule update --init --recursive
+python3 scripts/check_sources.py
+python3 -m unittest discover -s scripts -p 'test_*.py'
 ```
 
-日常获取源码和构建时不要使用 `git submodule update --remote`。SDK 升级应独立进行：
-选定官方提交，核对本地补丁与运行时集成，构建两种语言并完成板端验证后，再更新 gitlink。
-产品代码修改放在 `projects/mybot/` 和 `components/mybot/`，必须修改 SDK 的内容维护为
-`patches/` 下可审查的补丁。不要提交生成的依赖目录、`build/`、`__pycache__/` 等文件。
-详细说明见[官方依赖说明](docs/OFFICIAL_DEPENDENCIES.md)。
+构建脚本还会检查每个生成的 AP ELF 是否只包含所选区域的服务地址和 TLS 根证书。
+本仓库没有保存板端测试结果；需要在目标硬件上执行并记录。
 
-## 文档
+## 文档与许可
 
-- [mybot 项目](https://github.com/junlon2006/mybot)
-- [mybot 中文文档](https://github.com/junlon2006/mybot/blob/main/README.zh-CN.md)
-- [mybot 移植指南](https://github.com/junlon2006/mybot/blob/main/docs/PORTING.zh-CN.md)
-- [mybot 嵌入式集成指南](https://github.com/junlon2006/mybot/blob/main/docs/EMBEDDED.zh-CN.md)
-- [BK7258 平台组件说明](components/mybot/mybot_sdk/README.md)
-- [官方依赖与本地补丁](docs/OFFICIAL_DEPENDENCIES.md)
+- [官方依赖与快照](docs/OFFICIAL_DEPENDENCIES.md)
+- [MyBot SDK 组件](components/mybot/mybot_sdk/README.md)
+- [BK725x 平台适配](components/mybot/mybot_sdk/platforms/bk725x/README.md)
+- [提示音资源](projects/mybot/assets/README.md)
+- [MyBot 上游项目](https://github.com/junlon2006/mybot)
 
-## 贡献
-
-欢迎通过 Issue 和 Pull Request 参与改进：
-
-- 平台无关的 SDK 功能和公共接口改动，请优先提交到
-  [mybot 上游项目](https://github.com/junlon2006/mybot)。
-- BK7258 平台适配和固件工程改动提交到本仓库。产品代码维护在本地工程和组件中，
-  必须修改官方 SDK 的内容维护为小范围补丁；通用 SDK 修复也可向
-  [Beken 官方](https://github.com/bekencorp) 提交。
-- 集成、构建和文档问题可提交到
-  [mybot-bk7258 Issues](https://github.com/junlon2006/mybot-bk7258/issues)。
-
-提交代码前请保持改动范围清晰，说明使用的硬件、配置和验证方式，并避免将构建产物
-提交到版本库。
-
-## 许可证与第三方依赖
-
-本顶层仓库中的原创内容采用 [Apache License 2.0](LICENSE)。
-
-两个子模块及其中的第三方组件分别适用其自身许可和使用条款，包括但不限于：
-
-- [bk_avdk_smp 许可证](bk_avdk_smp/LICENSE)
-- [bk_solution_ai 许可证](bk_solution_ai/LICENSE)
-- [mybot SDK 许可证](components/mybot/mybot_sdk/LICENSE)
-- [AOSL 许可证及附加条款](components/mybot/mybot_aosl/aosl/LICENSE)
-- [mybot 第三方依赖说明](https://github.com/junlon2006/mybot/blob/main/THIRD_PARTY_NOTICES.md)
-
-Agora RTSA 等预编译二进制可能受试用期限、再分发和商业授权限制。将本项目用于产品或
-对外分发固件前，请独立核实并遵守所有适用条款。
+本仓库原创内容采用 [Apache License 2.0](LICENSE)。子模块、MyBot 快照、
+AOSL、Opus 和 Agora RTSA 分别适用其自身许可和条款；分发产品或固件前请核对
+对应文件。
