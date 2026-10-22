@@ -2,7 +2,7 @@
 
 **[简体中文](README.zh-CN.md) | English**
 
-BK7258 firmware reference for the
+**agora-r1-devkit** is the BK7258 firmware reference for the
 [agent-studio-device-firmware](https://github.com/AgoraIO-Community/agent-studio-device-firmware)
 AI voice SDK. The repository combines pinned Beken SDK submodules with a local SDK snapshot, a BK725x platform
 port, and the firmware project used to build the AP and CP images.
