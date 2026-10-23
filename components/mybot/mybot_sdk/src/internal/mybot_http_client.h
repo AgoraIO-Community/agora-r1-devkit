@@ -2,6 +2,7 @@
 #ifndef MYBOT_HTTP_CLIENT_H_
 #define MYBOT_HTTP_CLIENT_H_
 
+#include <stdbool.h>
 #include <stddef.h>
 
 #ifdef __cplusplus
@@ -15,6 +16,10 @@ typedef struct {
     char *body;      /* response body (NUL-terminated), NULL if empty */
     size_t body_len; /* body length in bytes */
 } mybot_http_client_response_t;
+
+/** Validate a printable HTTP header value. Embedded controls are rejected;
+ *  horizontal tabs are accepted only when allow_tab is true. */
+bool mybot_http_header_value_is_safe(const char *value, bool allow_tab);
 
 /**
  * @brief HTTP GET with extra custom headers.

@@ -1,10 +1,10 @@
 repository=https://github.com/AgoraIO-Community/agent-studio-device-firmware.git
-ref=refs/tags/v1.3.0
-commit=32ac74bc59cb72db70e9a68337753561b59b13d0
+ref=refs/heads/main
+commit=46e265a960fac48d93ae6755bdf694aeb09ab366
 version=1.3.0
-include_tree=9ee3a8bd4f85a9b211c68e2a4edcb466fb6580b2
-src_tree=c0032496b56ae8c40bdc5f7fe41847ca4e720153
-archive_sha256=6443be044e8210057b0291e53b8ea6dcb92664f54b78fd9c71ac2f10c34e292e
+include_tree=f0f111a3b7790a650dac9cb29c93edc2c52a5086
+src_tree=a6b52ae939875a49f0d8b04b512358aa9edea849
+archive_sha256=6c6717a50fab6132443a9fe98216b32d9edfc95b11a5a18514f72394c59f873d
 
 # include/ and src/ match the upstream commit byte-for-byte, except for
 # include/mybot/mybot_version.h, generated from the upstream .h.in template

@@ -43,9 +43,11 @@ set(sdk_srcs
     src/platform/mybot_wifi.c
     src/rtc/mybot_agora_rtc.c
     src/service/mybot_device_client.c
+    src/support/mybot_http_header.c
     src/support/mybot_http_client.c
     src/support/mybot_json.c
     src/support/mybot_ringbuf.c
+    src/support/mybot_url.c
 )
 
 set(adapter_srcs

@@ -109,20 +109,7 @@ typedef struct {
     aosl_atomic_t network_generation;
 } mybot_device_lifecycle_t;
 
-/* ----------------------------------------------------------
- * API
- * ---------------------------------------------------------- */
-
-/** Initialize the device state machine.
- *  @param lifecycle    caller-owned lifecycle context
- *  @param kv_store     initialized credential store for this runtime
- *  @param server_base  Device-service base URL.
- *  @param device_id    Unique device identifier (e.g. "AG-A1B2C3")
- *  @param firmware_ver Firmware version string (may be NULL)
- *  @param hw_model     Hardware model string (may be NULL)
- *  @param cbs          Callbacks (may be NULL)
- *  @return 0 on success, -1 on error.
- */
+/** Initialize a caller-owned lifecycle. Returns 0 on success, -1 on error. */
 int mybot_device_lifecycle_init(mybot_device_lifecycle_t *lifecycle, mybot_kv_store_t *kv_store,
                                 const char *server_base, const char *device_id,
                                 const char *firmware_ver, const char *hw_model,
@@ -137,11 +124,7 @@ void mybot_device_lifecycle_tick(mybot_device_lifecycle_t *lifecycle);
 void mybot_device_lifecycle_service_result(mybot_device_lifecycle_t *lifecycle,
                                            const mybot_device_service_request_t *request);
 
-/**
- * Notify the state machine whether device-service networking is available.
- * May be called from any thread as an atomic network input. While offline, tick()
- * performs no HTTP actions; the control owner ends an active conversation locally.
- */
+/** Publish an atomic network snapshot from any thread; tick() consumes it on control. */
 void mybot_device_lifecycle_set_network_available(mybot_device_lifecycle_t *lifecycle,
                                                   bool available);
 
@@ -149,13 +132,15 @@ void mybot_device_lifecycle_set_network_available(mybot_device_lifecycle_t *life
  *  Must be called by the application control owner. */
 void mybot_device_lifecycle_shutdown(mybot_device_lifecycle_t *lifecycle);
 
-/** Request a fresh pairing flow from the application control owner. */
+/* Pair, start, and stop requests must be serialized by the application control owner. */
+
+/** Request a fresh pairing flow. */
 void mybot_device_lifecycle_request_pair(mybot_device_lifecycle_t *lifecycle);
 
-/** Trigger conversation start from the application control owner. */
+/** Trigger conversation start. */
 void mybot_device_lifecycle_request_start(mybot_device_lifecycle_t *lifecycle);
 
-/** Trigger conversation stop from the application control owner. */
+/** Trigger conversation stop. */
 void mybot_device_lifecycle_request_stop(mybot_device_lifecycle_t *lifecycle);
 
 /** Publish from an RTC callback that the active connection ended. */
