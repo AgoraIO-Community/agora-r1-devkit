@@ -48,7 +48,6 @@ typedef struct {
     bool initialized;
     aosl_atomic_t running;
     aosl_atomic_t rtc_connected;
-    aosl_atomic_t muted;
 #if MYBOT_WAKE_WORDS
     aosl_atomic_t wake_words_enabled;
 #endif
@@ -120,12 +119,10 @@ void mybot_media_pipeline_push_remote_audio(mybot_media_pipeline_t *pipeline, co
 int mybot_media_pipeline_play_prompt(mybot_media_pipeline_t *pipeline, mybot_prompt_type_t type,
                                      const void *args);
 void mybot_media_pipeline_stop_prompt(mybot_media_pipeline_t *pipeline);
-/** Set playback volume (0..100) without changing the independent mute setting. */
+/** Set playback volume from 0 to 100. */
 int mybot_media_pipeline_set_volume(mybot_media_pipeline_t *pipeline, int volume);
 /** Adjust playback volume by -100..100, saturating the result to 0..100. */
 int mybot_media_pipeline_adjust_volume(mybot_media_pipeline_t *pipeline, int delta);
-/** Mute RTC and local prompt output; microphone capture and upload continue unchanged. */
-void mybot_media_pipeline_set_muted(mybot_media_pipeline_t *pipeline, bool muted);
 
 #ifdef __cplusplus
 }
