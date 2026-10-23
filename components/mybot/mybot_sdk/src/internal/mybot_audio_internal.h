@@ -20,12 +20,7 @@ typedef struct {
     aosl_atomic_t media_volume;
 } mybot_audio_t;
 
-/**
- * SDK-internal audio facade. The public mybot/platform/mybot_audio.h only
- * exposes the platform contract (ops tables + registration); volume control is
- * SDK-internal: a registered device volume implementation is the primary path,
- * and the media-volume software gain is the fallback when no implementation is active.
- */
+/* Platform PCM and volume contracts are defined in <mybot/platform/mybot_audio.h>. */
 
 /** Snapshot the default registered implementations into a runtime context. */
 void mybot_audio_context_init(mybot_audio_t *audio);
@@ -39,34 +34,13 @@ void mybot_audio_device_volume_deinit(mybot_audio_t *audio);
 /** Return whether the registered device volume implementation is initialized and active. */
 bool mybot_audio_device_volume_is_active(const mybot_audio_t *audio);
 
-/**
- * Set the real device volume through the active implementation.
- *
- * @param volume 0 (mute) .. MYBOT_AUDIO_VOLUME_MAX (full scale)
- * @return 0 on success, -1 if the implementation is unavailable or volume is invalid
- */
+/** Set device volume through the active implementation. */
 int mybot_audio_device_set_volume(mybot_audio_t *audio, int volume);
 
-/**
- * Get the current real device volume.
- *
- * Reads the implementation when it provides get_volume(); otherwise returns the
- * SDK-tracked last value. Succeeds only while the implementation is active.
- *
- * @param volume [out] current real device volume
- * @return 0 on success, -1 if the implementation is unavailable or volume is NULL
- */
+/** Read the current device volume, or the last SDK-tracked value if unsupported. */
 int mybot_audio_device_get_volume(mybot_audio_t *audio, int *volume);
 
-/**
- * Set the fallback media volume.
- *
- * Stored as a 0..100 software gain applied to downlink PCM only when no
- * device volume implementation is active. Volume 100 is unity gain.
- *
- * @param volume 0 (mute) .. MYBOT_AUDIO_VOLUME_MAX (full scale)
- * @return 0 on success, -1 on invalid volume
- */
+/** Set the fallback downlink software gain. */
 int mybot_audio_set_media_volume(mybot_audio_t *audio, int volume);
 
 /** Get the fallback media volume setting (defaults to MYBOT_AUDIO_VOLUME_DEFAULT). */

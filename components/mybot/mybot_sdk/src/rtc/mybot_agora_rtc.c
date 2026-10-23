@@ -41,12 +41,10 @@ typedef struct {
     char rtm_uid[MYBOT_RTM_UID_MAX_LEN];
     char rtm_channel[AGORA_RTC_CHANNEL_NAME_MAX_LEN + 1];
     bool rtm_login_requested;
-    bool rtm_login_completed;
     bool rtm_logged_in;
     bool rtm_subscribe_requested;
     bool rtm_subscribe_completed;
     bool rtm_subscribed;
-    bool rtm_owned_by_join;
     uint32_t rtm_login_generation;
     uint32_t rtm_subscribe_generation;
 } mybot_agora_rtc_t;
@@ -87,7 +85,6 @@ static void process_rtm_data(const char *, const void *, size_t, rtm_message_typ
 static void process_rtm_subscribe_result(const char *, rtm_err_code_e, uint32_t);
 static void process_rtm_subscribe_data(const char *, const char *, const void *, size_t,
                                        rtm_message_type_e, const char *, uint32_t);
-static void process_rtm_send_data_result(const char *, uint32_t, rtm_msg_state_e, uint32_t);
 static void process_join_channel_success(connection_id_t, uint32_t, int);
 static void process_reconnecting(connection_id_t);
 static void process_connection_lost(connection_id_t);
@@ -108,7 +105,6 @@ static void on_rtm_data(const char *, const void *, size_t, rtm_message_type_e, 
 static void on_rtm_subscribe_result(const char *, rtm_err_code_e);
 static void on_rtm_subscribe_data(const char *, const char *, const void *, size_t,
                                   rtm_message_type_e, const char *);
-static void on_rtm_send_data_result(const char *, uint32_t, rtm_msg_state_e);
 static void on_join_channel_success(connection_id_t, uint32_t, int);
 static void on_reconnecting(connection_id_t);
 static void on_connection_lost(connection_id_t);
@@ -130,7 +126,6 @@ typedef enum {
     RTC_EVENT_RTM_DATA,
     RTC_EVENT_RTM_SUB_RESULT,
     RTC_EVENT_RTM_SUB_DATA,
-    RTC_EVENT_RTM_SEND_RESULT,
     RTC_EVENT_JOIN_SUCCESS,
     RTC_EVENT_RECONNECTING,
     RTC_EVENT_CONNECTION_LOST,
@@ -177,10 +172,6 @@ typedef struct {
             char uid_text[MYBOT_RTM_UID_MAX_LEN];
             char custom_type[33];
         } rtm_sub_data;
-        struct {
-            rtm_msg_state_e state;
-            char uid_text[MYBOT_RTM_UID_MAX_LEN];
-        } rtm_send_result;
         struct {
             user_info_t user;
         } user;
@@ -248,10 +239,6 @@ static void rtc_event_process(const aosl_ts_t *ts, aosl_refobj_t ref, uintptr_t 
             e->payload.rtm_sub_data.len, e->payload.rtm_sub_data.message_type,
             e->payload.rtm_sub_data.custom_type[0] ? e->payload.rtm_sub_data.custom_type : NULL,
             e->generation);
-        break;
-    case RTC_EVENT_RTM_SEND_RESULT:
-        process_rtm_send_data_result(e->payload.rtm_send_result.uid_text, e->uid,
-                                     e->payload.rtm_send_result.state, e->generation);
         break;
     case RTC_EVENT_JOIN_SUCCESS:
         process_join_channel_success(e->conn_id, e->uid, e->value);
@@ -358,13 +345,10 @@ static const char *state_name(mybot_rtc_state_t state) {
         return "DISCONNECTED";
     case MYBOT_RTC_STATE_ERROR:
         return "ERROR";
-    case MYBOT_RTC_STATE_INIT_FAILED:
-        return "INIT_FAILED";
     }
     return "?";
 }
 
-/* All state transitions and application callbacks run on the RTC MPQ worker. */
 static void set_state(mybot_rtc_state_t state) {
     if (s_rtc.state == state) {
         return;
@@ -508,7 +492,6 @@ static void process_rtm_event(const char *rtm_uid, rtm_event_type_e event_type,
     switch (event_type) {
     case RTM_EVENT_TYPE_LOGIN:
         callback_gate_lock();
-        s_rtc.rtm_login_completed = true;
         s_rtc.rtm_logged_in = error_code == ERR_RTM_OK;
         callback_gate_unlock();
         if (s_rtc.rtm_logged_in) {
@@ -677,16 +660,6 @@ static void process_rtm_subscribe_data(const char *channel, const char *rtm_uid,
     }
 }
 
-static void process_rtm_send_data_result(const char *rtm_uid, uint32_t msg_id,
-                                         rtm_msg_state_e state, uint32_t generation) {
-    if (s_rtc.rtm_login_requested && s_rtc.rtm_logged_in &&
-        generation == (uint32_t)aosl_atomic_read(&s_rtm_login_generation) &&
-        s_rtc.callbacks.on_rtm_send_data_result) {
-        s_rtc.callbacks.on_rtm_send_data_result(rtm_uid, msg_id, (mybot_rtm_message_state_t)state,
-                                                s_rtc.callbacks.user_data);
-    }
-}
-
 static int login_rtm(const char *rtm_uid, const char *rtm_token) {
     if (!mybot_agora_rtc_rtm_uid_is_valid(rtm_uid)) {
         AOSL_LOG_ERR("[RTM] login rejected: invalid RTM UID");
@@ -705,20 +678,17 @@ static int login_rtm(const char *rtm_uid, const char *rtm_token) {
     memset(&handler, 0, sizeof(handler));
     handler.on_rtm_event = on_rtm_event;
     handler.on_rtm_data = on_rtm_data;
-    handler.on_rtm_send_data_result = on_rtm_send_data_result;
     handler.on_rtm_subscribe_result = on_rtm_subscribe_result;
     handler.on_rtm_subscribe_data = on_rtm_subscribe_data;
 
     callback_gate_lock();
     memcpy(s_rtc.rtm_uid, rtm_uid, strlen(rtm_uid) + 1);
-    s_rtc.rtm_owned_by_join = false;
     s_rtc.rtm_login_requested = true;
     if (++s_rtc.rtm_login_generation == 0) {
         s_rtc.rtm_login_generation = 1;
     }
     callback_gate_unlock();
     aosl_atomic_set(&s_rtm_login_generation, s_rtc.rtm_login_generation);
-    s_rtc.rtm_login_completed = false;
     s_rtc.rtm_logged_in = false;
     aosl_atomic_set(&s_rtm_login_done, false);
     aosl_atomic_set(&s_rtm_login_ok, false);
@@ -747,7 +717,6 @@ static int wait_for_rtm_login(const char *rtm_uid) {
             return -1;
         }
         if (completed) {
-            s_rtc.rtm_login_completed = true;
             s_rtc.rtm_logged_in = logged_in;
             if (!logged_in) {
                 clear_rtm_login();
@@ -780,9 +749,7 @@ static void clear_rtm_login(void) {
     callback_gate_lock();
     s_rtc.rtm_uid[0] = '\0';
     s_rtc.rtm_login_requested = false;
-    s_rtc.rtm_login_completed = false;
     s_rtc.rtm_logged_in = false;
-    s_rtc.rtm_owned_by_join = false;
     callback_gate_unlock();
 }
 
@@ -1013,8 +980,7 @@ static void process_token_will_expire(connection_id_t conn_id, const char *token
     }
 }
 
-/* RTSA invokes these handlers on its callback worker. They only copy the
- * borrowed callback arguments and enqueue a non-blocking event for rtc_mpq. */
+/* Copy borrowed RTSA callback arguments, then enqueue them for rtc_mpq. */
 static void on_rtm_event(const char *uid, rtm_event_type_e type, rtm_err_code_e error) {
     bool enabled;
     bool login_requested;
@@ -1141,25 +1107,6 @@ static void on_rtm_subscribe_data(const char *channel, const char *uid, const vo
         rtc_event_free(e);
         return;
     }
-    (void)rtc_event_queue(e);
-}
-static void on_rtm_send_data_result(const char *uid, uint32_t id, rtm_msg_state_e state) {
-    bool enabled;
-    bool requested;
-    callback_gate_lock();
-    enabled = aosl_atomic_read(&s_rtc_callbacks_enabled) != 0;
-    requested = s_rtc.rtm_login_requested;
-    callback_gate_unlock();
-    if (!enabled || !uid || !requested ||
-        strlen(uid) >= sizeof(((rtc_event_t *)0)->payload.rtm_send_result.uid_text))
-        return;
-    rtc_event_t *e = rtc_event_new(RTC_EVENT_RTM_SEND_RESULT);
-    if (!e)
-        return;
-    memcpy(e->payload.rtm_send_result.uid_text, uid, strlen(uid) + 1U);
-    e->uid = id;
-    e->payload.rtm_send_result.state = state;
-    e->generation = (uint32_t)aosl_atomic_read(&s_rtm_login_generation);
     (void)rtc_event_queue(e);
 }
 static void on_join_channel_success(connection_id_t c, uint32_t uid, int elapsed) {
@@ -1352,11 +1299,6 @@ static int rtc_init_impl(const char *app_id, const mybot_agora_rtc_callbacks_t *
     return 0;
 }
 
-static int rtc_login_rtm_impl(const char *rtm_uid, const char *rtm_token) {
-    int ret = login_rtm(rtm_uid, rtm_token);
-    return ret;
-}
-
 static int rtc_logout_rtm_impl(void) {
     if (!s_rtc.rtm_login_requested) {
         clear_rtm_subscription();
@@ -1370,36 +1312,10 @@ static int rtc_logout_rtm_impl(void) {
     } else {
         AOSL_LOG_DBG("[RTM] logged out (uid=%s)", s_rtc.rtm_uid);
     }
-    /* Clear wrapper state even when the vendor call fails. Keeping a stale
-     * logged-in flag would block a later login and route sends to a dead
-     * session. */
+    /* Clear wrapper state even when the vendor call fails so a later join can
+     * start a clean RTM session. */
     clear_rtm_login();
     return (unsubscribe_ret < 0 || ret < 0) ? -1 : 0;
-}
-
-static bool rtc_is_rtm_logged_in_impl(void) {
-    bool logged_in = s_rtc.rtm_logged_in;
-    return logged_in;
-}
-
-static int rtc_send_rtm_data_impl(const char *peer_rtm_uid, const void *data, size_t len,
-                                  uint32_t msg_id, const char *custom_type) {
-    if (!mybot_agora_rtc_rtm_uid_is_valid(peer_rtm_uid) || !data || len == 0 || len > 31U * 1024U ||
-        (custom_type && strlen(custom_type) > 32U)) {
-        AOSL_LOG_ERR("[RTM] send rejected: invalid peer, payload, or custom type");
-        return -1;
-    }
-
-    if (!s_rtc.rtm_logged_in) {
-        AOSL_LOG_ERR("[RTM] send rejected: login has not completed");
-        return -1;
-    }
-    int ret =
-        agora_rtm_send_data(peer_rtm_uid, data, len, msg_id, RTM_MESSAGE_TYPE_BINARY, custom_type);
-    if (ret < 0) {
-        AOSL_LOG_ERR("[RTM] send failed: %s", agora_rtc_err_2_str(ret));
-    }
-    return ret;
 }
 
 static int rtc_join_impl(const char *channel, const char *token, const char *user_account,
@@ -1430,7 +1346,6 @@ static int rtc_join_impl(const char *channel, const char *token, const char *use
             return -1;
         }
         rtm_started_for_join = true;
-        s_rtc.rtm_owned_by_join = true;
     }
 
     if (wait_for_rtm_login(user_account) < 0) {
@@ -1533,7 +1448,7 @@ static int rtc_leave_impl(void) {
 
     connection_id_t conn_id = s_rtc.conn_id;
     if (conn_id == CONNECTION_ID_INVALID) {
-        return s_rtc.rtm_owned_by_join ? rtc_logout_rtm_impl() : 0;
+        return rtc_logout_rtm_impl();
     }
 
     s_rtc.conn_id = CONNECTION_ID_INVALID;
@@ -1549,7 +1464,7 @@ static int rtc_leave_impl(void) {
         AOSL_LOG_NTC("[RTC] connection destroyed (conn_id=%u)", conn_id);
     }
     set_state(destroy_ret < 0 ? MYBOT_RTC_STATE_ERROR : MYBOT_RTC_STATE_INITIALIZED);
-    int rtm_ret = s_rtc.rtm_owned_by_join ? rtc_logout_rtm_impl() : unsubscribe_rtm();
+    int rtm_ret = rtc_logout_rtm_impl();
     return leave_ret < 0 || destroy_ret < 0 || rtm_ret < 0 ? -1 : 0;
 }
 
@@ -1684,33 +1599,6 @@ static void cmd_init(const aosl_ts_t *ts, aosl_refobj_t ref, uintptr_t argc, uin
             rtc_init_impl((const char *)argv[1], (const mybot_agora_rtc_callbacks_t *)argv[2]);
     }
 }
-static void cmd_login(const aosl_ts_t *ts, aosl_refobj_t ref, uintptr_t argc, uintptr_t argv[]) {
-    (void)ts;
-    (void)ref;
-    if (argc == 3)
-        *(int *)argv[0] = rtc_login_rtm_impl((const char *)argv[1], (const char *)argv[2]);
-}
-static void cmd_logout(const aosl_ts_t *ts, aosl_refobj_t ref, uintptr_t argc, uintptr_t argv[]) {
-    (void)ts;
-    (void)ref;
-    if (argc == 1)
-        *(int *)argv[0] = rtc_logout_rtm_impl();
-}
-static void cmd_is_logged(const aosl_ts_t *ts, aosl_refobj_t ref, uintptr_t argc,
-                          uintptr_t argv[]) {
-    (void)ts;
-    (void)ref;
-    if (argc == 1)
-        *(bool *)argv[0] = rtc_is_rtm_logged_in_impl();
-}
-static void cmd_send_rtm(const aosl_ts_t *ts, aosl_refobj_t ref, uintptr_t argc, uintptr_t argv[]) {
-    (void)ts;
-    (void)ref;
-    if (argc == 6)
-        *(int *)argv[0] =
-            rtc_send_rtm_data_impl((const char *)argv[1], (const void *)argv[2], (size_t)argv[3],
-                                   (uint32_t)argv[4], (const char *)argv[5]);
-}
 static void cmd_join(const aosl_ts_t *ts, aosl_refobj_t ref, uintptr_t argc, uintptr_t argv[]) {
     (void)ts;
     (void)ref;
@@ -1783,29 +1671,6 @@ int mybot_agora_rtc_init(const char *app_id, const mybot_agora_rtc_callbacks_t *
     return result;
 }
 
-int mybot_agora_rtc_login_rtm(const char *uid, const char *token) {
-    int result = -1;
-    uintptr_t argv[] = {(uintptr_t)&result, (uintptr_t)uid, (uintptr_t)token};
-    return rtc_call("rtc_login", cmd_login, 3, argv) < 0 ? -1 : result;
-}
-int mybot_agora_rtc_logout_rtm(void) {
-    int result = -1;
-    uintptr_t argv[] = {(uintptr_t)&result};
-    return rtc_call("rtc_logout", cmd_logout, 1, argv) < 0 ? -1 : result;
-}
-bool mybot_agora_rtc_is_rtm_logged_in(void) {
-    bool result = false;
-    uintptr_t argv[] = {(uintptr_t)&result};
-    (void)rtc_call("rtc_is_logged", cmd_is_logged, 1, argv);
-    return result;
-}
-int mybot_agora_rtc_send_rtm_data(const char *peer, const void *data, size_t len, uint32_t id,
-                                  const char *custom) {
-    int result = -1;
-    uintptr_t argv[] = {(uintptr_t)&result, (uintptr_t)peer, (uintptr_t)data,
-                        (uintptr_t)len,     (uintptr_t)id,   (uintptr_t)custom};
-    return rtc_call("rtc_send_rtm", cmd_send_rtm, 6, argv) < 0 ? -1 : result;
-}
 int mybot_agora_rtc_join(const char *channel, const char *token, const char *user,
                          uint32_t video_min_bps, uint32_t video_max_bps) {
     int result = -1;

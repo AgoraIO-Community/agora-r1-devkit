@@ -33,8 +33,8 @@ The recorded runtime provenance includes:
 | Input | Source |
 | --- | --- |
 | MyBot integration baseline | `junlon2006/bk_solution_ai@438f132542bf3f0bb2f79aee49154d83cd6fdaf9`, `components/mybot` |
-| MyBot SDK `include/` and `src/` | `junlon2006/mybot@3f9a1add55f1b946d59655b5b88f4662d780fb31`, version 1.3.0 |
-| Pairing and prompt source audio | The same MyBot SDK commit, `assets/locales` |
+| MyBot SDK `include/` and `src/` | `junlon2006/mybot@baf41bac3b6ca25bad9820f9fc857c94698607d8`, version 1.3.0 |
+| Pairing and prompt source audio | `junlon2006/mybot@3f9a1add55f1b946d59655b5b88f4662d780fb31`, `assets/locales` |
 | AOSL HAL and RTSA inputs | `junlon2006/bk_avdk_smp@a9529f1224747604192b46668471d3473d80050c` |
 
 Those source URLs describe provenance only. They are not additional build

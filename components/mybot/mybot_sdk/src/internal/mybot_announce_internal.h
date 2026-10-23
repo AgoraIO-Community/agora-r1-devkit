@@ -27,16 +27,7 @@ typedef struct {
     uint32_t generation;
 } mybot_announce_t;
 
-/*
- * SDK-internal announcement facade.
- *
- * The public mybot/platform/mybot_announce.h only exposes the platform contract
- * (ops table + mybot_platform_register()); the SDK core drives the registered
- * implementation through the functions below. When a pair code is obtained the core
- * queues the fixed prompt followed by one sound per digit. The playback worker
- * streams those sounds directly to the normal speaker path without mixing them
- * into the RTC playback ring.
- */
+/* Playback reads source sounds under lock; the playback worker owns PCM delivery. */
 
 /** Initialize the registered implementation. No-op when none is registered. */
 int mybot_announce_init(mybot_announce_t *announce);
@@ -44,14 +35,7 @@ int mybot_announce_init(mybot_announce_t *announce);
 /** Release the implementation and any queued announcement. Idempotent. */
 void mybot_announce_deinit(mybot_announce_t *announce);
 
-/**
- * Start the pairing-code announcement: fixed prompt + one sound per digit.
- *
- * @param code pair code from the device service
- * @return 0 when playback was queued, -1 when the feature is disabled or the
- *         prompt asset is unavailable. A failed replacement preserves the
- *         previous announcement.
- */
+/** Queue a pair-code announcement. A failed replacement preserves the current one. */
 int mybot_announce_play_pair_code(mybot_announce_t *announce, const char *code);
 
 /** Discard source sounds and invalidate PCM buffered by the playback worker. */

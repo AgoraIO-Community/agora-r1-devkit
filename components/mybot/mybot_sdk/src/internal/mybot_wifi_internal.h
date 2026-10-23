@@ -17,13 +17,6 @@ typedef struct {
 } mybot_wifi_t;
 
 /**
- * SDK-internal Wi-Fi facade. The public mybot/platform/mybot_wifi.h only
- * exposes the platform contract (event and handler types, ops table and
- * mybot_platform_register()); the SDK consumes connectivity events, while the
- * product owns provisioning and network credentials.
- */
-
-/**
  * Register the platform connectivity monitor. Initial usable connectivity and
  * subsequent transitions are reported through handler.
  */

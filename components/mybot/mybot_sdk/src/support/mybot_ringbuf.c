@@ -61,16 +61,6 @@ int mybot_ringbuf_destroy(mybot_ringbuf_t handle) {
     return 0;
 }
 
-int mybot_ringbuf_clear(mybot_ringbuf_t handle) {
-    if (!handle) {
-        return -1;
-    }
-    ringbuf_internal_t *rb = (ringbuf_internal_t *)handle;
-    aosl_atomic_set(&rb->head, 0);
-    aosl_atomic_set(&rb->tail, 0);
-    return 0;
-}
-
 int mybot_ringbuf_get_free_size(mybot_ringbuf_t handle) {
     if (!handle) {
         return -1;
