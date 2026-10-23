@@ -13,6 +13,7 @@
 #include "mybot_platform_registry.h"
 #include "mybot_json.h"
 #include "mybot_state_model.h"
+#include "mybot_url.h"
 #include "mybot_video_internal.h"
 #include "mybot_wifi_internal.h"
 
@@ -1088,58 +1089,8 @@ static void on_wifi_event(mybot_wifi_event_t event, void *user_data) {
 }
 
 static bool server_url_is_valid(const char *url) {
-    if (!url) {
-        return false;
-    }
-    const char *p = NULL;
-#if MYBOT_ENABLE_HTTPS
-    if (strncmp(url, "https://", 8) == 0) {
-        p = url + 8;
-    }
-#endif
-#if MYBOT_ALLOW_INSECURE_HTTP
-    if (!p && strncmp(url, "http://", 7) == 0) {
-        p = url + 7;
-    }
-#endif
-    if (!p || !p[0]) {
-        return false;
-    }
-    const char *host = p;
-    while (*p && *p != ':' && *p != '/') {
-        unsigned char c = (unsigned char)*p;
-        if (c <= 0x20 || c > 0x7e || c == '@' || c == '?' || c == '#') {
-            return false;
-        }
-        ++p;
-    }
-    if (p == host) {
-        return false;
-    }
-    if (*p == ':') {
-        ++p;
-        if (!(*p >= '0' && *p <= '9')) {
-            return false;
-        }
-        unsigned long port = 0;
-        while (*p >= '0' && *p <= '9') {
-            port = port * 10U + (unsigned long)(*p - '0');
-            if (port > 65535U) {
-                return false;
-            }
-            ++p;
-        }
-        if (port == 0) {
-            return false;
-        }
-    }
-    for (; *p; ++p) {
-        unsigned char c = (unsigned char)*p;
-        if (c <= 0x20 || c > 0x7e || c == '\\' || c == '#') {
-            return false;
-        }
-    }
-    return true;
+    mybot_url_parts_t parts;
+    return mybot_url_parse(url, &parts) == 0;
 }
 
 static bool config_is_valid(const mybot_config_t *cfg) {

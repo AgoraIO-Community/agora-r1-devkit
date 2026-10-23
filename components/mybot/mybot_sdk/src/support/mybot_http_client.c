@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 #include "mybot_http_client.h"
 #include "mybot_https_transport.h"
+#include "mybot_url.h"
 
 #include <mybot/mybot_build_config.h>
 
@@ -21,12 +22,9 @@
 /* ----------------------------------------------------------
  * Constants
  * ---------------------------------------------------------- */
-#define HTTP_DEFAULT_PORT 80
-#define HTTPS_DEFAULT_PORT 443
 #define HTTP_TIMEOUT_MS 5000 /* shared deadline for connect/send/receive stages */
 #define RECV_BUF_SIZE 4096
 #define RECV_BUF_MAX (32 * 1024) /* hard cap on response buffer */
-#define MAX_URL_LEN 512
 #define HTTP_REQUEST_BUFFER_SIZE 2048
 
 static bool ascii_case_equal_n(const char *left, const char *right, size_t len) {
@@ -54,53 +52,6 @@ static int deadline_remaining_ms(uint64_t deadline) {
 
     uint64_t remaining = deadline - now;
     return remaining > INT_MAX ? INT_MAX : (int)remaining;
-}
-
-/* ----------------------------------------------------------
- * Internal: URL parts
- * ---------------------------------------------------------- */
-typedef struct {
-    bool use_tls;
-    char host[128];
-    int port;
-    char path[512];
-} url_parts_t;
-
-static bool host_is_safe(const char *host) {
-    if (!host || !host[0]) {
-        return false;
-    }
-    for (const unsigned char *p = (const unsigned char *)host; *p; p++) {
-        if (*p <= 0x20 || *p > 0x7e || *p == '/' || *p == '\\' || *p == '?' || *p == '#' ||
-            *p == '@') {
-            return false;
-        }
-    }
-    return true;
-}
-
-static bool request_target_is_safe(const char *target) {
-    if (!target || target[0] != '/') {
-        return false;
-    }
-    for (const unsigned char *p = (const unsigned char *)target; *p; p++) {
-        if (*p <= 0x20 || *p > 0x7e || *p == '#' || *p == '\\') {
-            return false;
-        }
-    }
-    return true;
-}
-
-static bool header_value_is_safe(const char *value) {
-    if (!value || !value[0]) {
-        return false;
-    }
-    for (const unsigned char *p = (const unsigned char *)value; *p; p++) {
-        if ((*p < 0x20 && *p != '\t') || *p > 0x7e) {
-            return false;
-        }
-    }
-    return true;
 }
 
 static bool header_name_char(unsigned char c) {
@@ -139,89 +90,6 @@ static bool extra_headers_are_safe(const char *headers) {
         line = line_end + 2;
     }
     return true;
-}
-
-/*
- * Parse "https://host[:port][/path]" or an explicitly enabled HTTP URL.
- * Returns 0 on success, -1 on error.
- */
-static int parse_url(const char *url, url_parts_t *parts) {
-    if (!url || !parts) {
-        return -1;
-    }
-
-    memset(parts, 0, sizeof(*parts));
-    parts->path[0] = '/';
-
-    const char *p = url;
-
-#if MYBOT_ENABLE_HTTPS
-    if (strncmp(p, "https://", 8) == 0) {
-        parts->use_tls = true;
-        parts->port = HTTPS_DEFAULT_PORT;
-        p += 8;
-    } else
-#endif
-#if MYBOT_ALLOW_INSECURE_HTTP
-        if (strncmp(p, "http://", 7) == 0) {
-        parts->use_tls = false;
-        parts->port = HTTP_DEFAULT_PORT;
-        p += 7;
-    } else
-#endif
-    {
-        return -1;
-    }
-
-    /* Extract host (up to ':', '/', or the end). */
-    const char *host_start = p;
-    while (*p && *p != ':' && *p != '/') {
-        p++;
-    }
-    size_t host_len = (size_t)(p - host_start);
-    if (host_len == 0 || host_len >= sizeof(parts->host)) {
-        return -1;
-    }
-    memcpy(parts->host, host_start, host_len);
-    parts->host[host_len] = '\0';
-    if (!host_is_safe(parts->host)) {
-        return -1;
-    }
-
-    /* Parse an optional port. */
-    if (*p == ':') {
-        p++;
-        char port_str[8];
-        int pi = 0;
-        while (*p >= '0' && *p <= '9' && pi < (int)sizeof(port_str) - 1) {
-            port_str[pi++] = *p++;
-        }
-        port_str[pi] = '\0';
-        if (pi == 0) {
-            return -1;
-        }
-        parts->port = atoi(port_str);
-        if (parts->port <= 0 || parts->port > 65535) {
-            return -1;
-        }
-    }
-
-    /* Parse the path, defaulting to "/". */
-    if (*p == '/') {
-        size_t path_len = strlen(p);
-        if (path_len >= sizeof(parts->path)) {
-            return -1;
-        }
-        memcpy(parts->path, p, path_len + 1);
-    } else if (*p != '\0') {
-        return -1;
-    }
-
-    if (!request_target_is_safe(parts->path)) {
-        return -1;
-    }
-
-    return 0;
 }
 
 static aosl_fd_t tcp_connect(const char *host, int port, uint64_t deadline);
@@ -273,7 +141,8 @@ typedef struct {
     void *tls_connection;
 } http_stream_t;
 
-static int stream_connect(http_stream_t *stream, const url_parts_t *parts, uint64_t deadline) {
+static int stream_connect(http_stream_t *stream, const mybot_url_parts_t *parts,
+                          uint64_t deadline) {
     memset(stream, 0, sizeof(*stream));
     stream->fd = AOSL_INVALID_FD;
     stream->use_tls = parts->use_tls;
@@ -797,11 +666,11 @@ static int http_request(const char *method, const char *url, const char *content
                         mybot_http_client_response_t *resp) {
     uint64_t deadline = aosl_hal_get_tick_ms() + HTTP_TIMEOUT_MS;
 
-    url_parts_t parts;
-    if (parse_url(url, &parts) < 0) {
+    mybot_url_parts_t parts;
+    if (mybot_url_parse(url, &parts) < 0) {
         return -1;
     }
-    if ((content_type && !header_value_is_safe(content_type)) ||
+    if ((content_type && !mybot_http_header_value_is_safe(content_type, true)) ||
         !extra_headers_are_safe(extra_headers)) {
         return -1;
     }
@@ -819,8 +688,8 @@ static int http_request(const char *method, const char *url, const char *content
         return -1;
     }
     char host_header[sizeof(parts.host) + 8];
-    bool include_port = (parts.use_tls && parts.port != HTTPS_DEFAULT_PORT) ||
-                        (!parts.use_tls && parts.port != HTTP_DEFAULT_PORT);
+    bool include_port = (parts.use_tls && parts.port != MYBOT_URL_HTTPS_PORT) ||
+                        (!parts.use_tls && parts.port != MYBOT_URL_HTTP_PORT);
     int host_len = include_port
                        ? snprintf(host_header, sizeof(host_header), "%s:%d", parts.host, parts.port)
                        : snprintf(host_header, sizeof(host_header), "%s", parts.host);

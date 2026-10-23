@@ -196,12 +196,9 @@ static void playback_timer(aosl_timer_t id, const aosl_ts_t *now, uintptr_t argc
         return;
     }
     const int16_t *write_data = pipeline->pb_pending + pipeline->pb_pending_offset;
-    if (aosl_atomic_read(&pipeline->muted)) {
-        memset(pipeline->announce_frame, 0, (size_t)pipeline->pb_pending_frames * frame_bytes);
-        write_data = pipeline->announce_frame;
-    } else if (!mybot_audio_device_volume_is_active(&pipeline->audio) &&
-               mybot_audio_get_media_volume(&pipeline->audio) != MYBOT_AUDIO_VOLUME_MAX) {
-        /* Keep the pending PCM unchanged so retries use the latest volume and mute setting. */
+    if (!mybot_audio_device_volume_is_active(&pipeline->audio) &&
+        mybot_audio_get_media_volume(&pipeline->audio) != MYBOT_AUDIO_VOLUME_MAX) {
+        /* Keep the pending PCM unchanged so retries use the latest volume. */
         memcpy(pipeline->announce_frame, write_data,
                (size_t)pipeline->pb_pending_frames * frame_bytes);
         mybot_audio_apply_media_volume(&pipeline->audio, pipeline->announce_frame,
@@ -372,7 +369,6 @@ int mybot_media_pipeline_start(mybot_media_pipeline_t *pipeline,
     pipeline->cbs = *callbacks;
     pipeline->stop_complete = false;
     mybot_audio_context_init(&pipeline->audio);
-    aosl_atomic_set(&pipeline->muted, false);
     aosl_atomic_set(&pipeline->running, true);
 
     const mybot_audio_capture_ops_t *cap_ops = pipeline->audio.capture_ops;
@@ -674,10 +670,4 @@ int mybot_media_pipeline_adjust_volume(mybot_media_pipeline_t *pipeline, int del
         volume = MYBOT_AUDIO_VOLUME_MAX;
     }
     return mybot_media_pipeline_set_volume(pipeline, volume);
-}
-
-void mybot_media_pipeline_set_muted(mybot_media_pipeline_t *pipeline, bool muted) {
-    if (pipeline) {
-        aosl_atomic_set(&pipeline->muted, muted);
-    }
 }

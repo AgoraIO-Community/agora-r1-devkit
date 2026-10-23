@@ -29,8 +29,6 @@ void mybot_presenter_update_server_indicator(mybot_presenter_t *presenter,
                                              mybot_lcd_indicator_t indicator, bool active);
 /** Clear all server-state indicators. */
 void mybot_presenter_clear_server_indicators(mybot_presenter_t *presenter);
-/** Render one emotion command without retaining or replaying it on ordinary updates. */
-int mybot_presenter_show_emotion(mybot_presenter_t *presenter, mybot_lcd_indicator_t indicator);
 void mybot_presenter_render_state(mybot_presenter_t *presenter,
                                   const mybot_state_model_t *state_model);
 

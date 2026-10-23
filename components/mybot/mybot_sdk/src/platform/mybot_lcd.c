@@ -47,17 +47,6 @@ int mybot_lcd_init(mybot_lcd_t *lcd) {
     return 0;
 }
 
-int mybot_lcd_show_screen(mybot_lcd_t *lcd, mybot_lcd_screen_t screen) {
-    if (!screen_is_valid(screen) || screen == MYBOT_LCD_SCREEN_PAIR_CODE) {
-        return -1;
-    }
-
-    mybot_lcd_content_t content;
-    memset(&content, 0, sizeof(content));
-    content.screen = screen;
-    return mybot_lcd_show_content(lcd, &content);
-}
-
 int mybot_lcd_show_content(mybot_lcd_t *lcd, const mybot_lcd_content_t *content) {
     if (!content) {
         return -1;

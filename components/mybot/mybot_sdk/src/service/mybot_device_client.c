@@ -11,18 +11,6 @@
 #include <stdio.h>
 #include <string.h>
 
-static bool header_value_is_safe(const char *value) {
-    if (!value || !value[0]) {
-        return false;
-    }
-    for (const unsigned char *p = (const unsigned char *)value; *p; p++) {
-        if (*p < 0x20 || *p == 0x7f) {
-            return false;
-        }
-    }
-    return true;
-}
-
 static bool url_unreserved(unsigned char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' ||
            c == '.' || c == '_' || c == '~';
@@ -65,7 +53,7 @@ static int build_device_url(const char *base_url, const char *device_id, const c
 
 static int build_authorization_header(const char *scheme, const char *credential, char *header,
                                       size_t header_size) {
-    if (!scheme || !header_value_is_safe(credential)) {
+    if (!scheme || !mybot_http_header_value_is_safe(credential, false)) {
         return -1;
     }
     int written = snprintf(header, header_size, "Authorization: %s%s\r\n", scheme, credential);

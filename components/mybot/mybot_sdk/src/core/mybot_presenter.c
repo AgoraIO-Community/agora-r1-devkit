@@ -93,25 +93,6 @@ void mybot_presenter_clear_server_indicators(mybot_presenter_t *presenter) {
     }
 }
 
-int mybot_presenter_show_emotion(mybot_presenter_t *presenter, mybot_lcd_indicator_t indicator) {
-    if (!presenter || !presenter->active ||
-        (indicator != MYBOT_LCD_INDICATOR_HAPPY && indicator != MYBOT_LCD_INDICATOR_SAD &&
-         indicator != MYBOT_LCD_INDICATOR_ANGRY && indicator != MYBOT_LCD_INDICATOR_SURPRISED)) {
-        AOSL_LOG_WRN("cannot render LCD emotion: invalid parameters or inactive display");
-        return -1;
-    }
-
-    mybot_lcd_content_t content;
-    memset(&content, 0, sizeof(content));
-    content.screen = MYBOT_LCD_SCREEN_IN_CONVERSATION;
-    content.indicators = presenter->indicators | indicator;
-    int ret = mybot_lcd_show_content(&presenter->lcd, &content);
-    if (ret < 0) {
-        AOSL_LOG_WRN("failed to render LCD emotion %u", (unsigned)indicator);
-    }
-    return ret;
-}
-
 static bool app_state_matches_device_state(mybot_device_state_t device_state,
                                            mybot_state_t app_state) {
     switch (device_state) {
