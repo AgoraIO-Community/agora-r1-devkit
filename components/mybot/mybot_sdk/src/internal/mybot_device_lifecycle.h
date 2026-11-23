@@ -30,8 +30,10 @@ typedef struct {
     char device_id[MYBOT_DEVICE_CLIENT_MAX_ID];
     char credential[MYBOT_DEVICE_CLIENT_MAX_TOKEN];
     int result;
+
     union {
         mybot_device_binding_t binding;
+
         struct {
             char conversation_id[MYBOT_DEVICE_CLIENT_MAX_ID];
             char reason[32];
@@ -94,7 +96,6 @@ typedef struct {
     char conversation_id[MYBOT_DEVICE_CLIENT_MAX_ID];
     char rtc_channel[128];
     char rtc_uid[64];
-    char rtc_agent_uid[64];
     bool conversation_requested;
     aosl_atomic_t stop_request;
     aosl_atomic_t rtc_token_renewal_requested;

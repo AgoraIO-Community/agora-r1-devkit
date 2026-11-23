@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 #include "mybot_audio_playback_bk725x.h"
+#include "mybot_audio_internal_bk725x.h"
 #include "mybot_audio_power_bk725x.h"
 
 #include <components/bk_audio/audio_pipeline/audio_element.h>
@@ -144,29 +145,38 @@ int mybot_audio_bk725x_playback_get_digital_gain(uint8_t *gain) {
 }
 
 static int stop_pipeline(bk725x_playback_ctx_t *playback) {
-    int result = 0;
-
     if (!playback || !playback->started) {
         return 0;
     }
 
     if (audio_pipeline_stop(playback->pipeline) != BK_OK) {
         MYBOT_LOGE(TAG, "failed to stop playback pipeline");
-        result = -1;
+        return -1;
+    }
+    /* The pipeline wait resets its state. Confirm both elements stopped first
+     * so a timeout leaves the pipeline available for a shutdown retry. */
+    const TickType_t timeout = BK_MS_TO_TICKS(MYBOT_AUDIO_STOP_TIMEOUT_MS);
+    if (audio_element_wait_for_stop_ms(playback->raw_writer, timeout) != BK_OK ||
+        audio_element_wait_for_stop_ms(playback->speaker, timeout) != BK_OK) {
+        MYBOT_LOGE(TAG, "playback elements did not stop before timeout");
+        return -1;
     }
     if (audio_pipeline_wait_for_stop(playback->pipeline) != BK_OK) {
         MYBOT_LOGE(TAG, "failed to wait for playback pipeline");
-        result = -1;
+        return -1;
     }
 
     playback->started = false;
-    MYBOT_LOGI(TAG, "stop complete, result=%d", result);
-    return result;
+    MYBOT_LOGI(TAG, "stop complete");
+    return 0;
 }
 
 static bool release_playback(bk725x_playback_ctx_t *playback) {
     if (!playback) {
         return true;
+    }
+    if (stop_pipeline(playback) < 0) {
+        return false;
     }
 
     /* Wait for an in-flight volume operation, then prevent any new access to
@@ -175,8 +185,6 @@ static bool release_playback(bk725x_playback_ctx_t *playback) {
         MYBOT_LOGE(TAG, "release aborted to preserve active speaker handle");
         return false;
     }
-
-    (void)stop_pipeline(playback);
 
     if (playback->pipeline) {
         audio_pipeline_deinit(playback->pipeline);
