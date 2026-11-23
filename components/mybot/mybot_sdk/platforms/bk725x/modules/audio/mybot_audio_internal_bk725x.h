@@ -2,6 +2,9 @@
 #ifndef MYBOT_AUDIO_INTERNAL_BK725X_H_
 #define MYBOT_AUDIO_INTERNAL_BK725X_H_
 
+/* Match the Beken audio element's native stop and termination timeout. */
+#define MYBOT_AUDIO_STOP_TIMEOUT_MS 2000
+
 #ifdef __cplusplus
 extern "C" {
 #endif

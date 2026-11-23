@@ -32,8 +32,8 @@ The recorded runtime provenance includes:
 
 | Input | Source |
 | --- | --- |
-| SDK core | `AgoraIO-Community/agent-studio-device-firmware@46e265a960fac48d93ae6755bdf694aeb09ab366`, `main` |
-| BK725x platform baseline | `AgoraIO-Community/agora-r1-devkit@6f77b3853ca9a13fd2597e80ee9c494ab8c11812` |
+| SDK core | `AgoraIO-Community/agent-studio-device-firmware@1cd46b003e941551a30719b029157085fd8214e5`, `main` |
+| BK725x platform baseline with local audio and controller updates | `AgoraIO-Community/agora-r1-devkit@b2ca7572a88b8144f3de22da8fcd09247f14a627` |
 | AOSL HAL and RTSA inputs | `AgoraIO-Community/agora-r1-devkit@0db7814501093d67cd614944996832c018c31f99` |
 
 Those source records describe provenance and pinned content. They are not additional build

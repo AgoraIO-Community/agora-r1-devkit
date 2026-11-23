@@ -226,12 +226,16 @@ static int start_sdk(app_runtime_t *runtime) {
     return 0;
 }
 
-static void stop_sdk(void) {
-    if (!mybot_is_running() && mybot_get_state() == MYBOT_STATE_STOPPED) {
-        return;
-    }
-    MYBOT_LOGI(TAG, "stopping mybot SDK");
+static bool stop_sdk(void) {
     mybot_stop();
+    if (mybot_get_state() == MYBOT_STATE_STOPPED) {
+        return true;
+    }
+
+    MYBOT_LOGW(TAG, "SDK shutdown incomplete, retrying");
+    (void)rtos_delay_milliseconds(CONTROLLER_POLL_MS);
+    mybot_stop();
+    return mybot_get_state() == MYBOT_STATE_STOPPED;
 }
 
 /* Forward semantic key actions to the SDK key adapter.  The dispatcher has no
@@ -353,8 +357,7 @@ static int controller_run(app_runtime_t *runtime) {
             return -1;
         }
         if (network_result > 0) {
-            stop_sdk();
-            if (stop_network() < 0) {
+            if (!stop_sdk() || stop_network() < 0) {
                 return -1;
             }
             if (provision_network(runtime) < 0) {
@@ -386,8 +389,9 @@ static int controller_run(app_runtime_t *runtime) {
         log_state_transition(&last_state, &state_valid);
         sdk_failed = sdk_failed || mybot_get_state() == MYBOT_STATE_FAILED;
 
-        MYBOT_LOGW(TAG, "SDK stopped, state=%d", (int)mybot_get_state());
-        stop_sdk();
+        if (!stop_sdk()) {
+            return -1;
+        }
         if (runtime->provision_requested) {
             if (stop_network() < 0 || provision_network(runtime) < 0) {
                 return -1;
@@ -399,8 +403,11 @@ static int controller_run(app_runtime_t *runtime) {
 }
 
 static void controller_cleanup(app_runtime_t *runtime) {
+    if (!stop_sdk()) {
+        MYBOT_LOGE(TAG, "SDK shutdown incomplete, retaining platform resources");
+        return;
+    }
     mybot_prompt_player_bk725x_stop();
-    stop_sdk();
     stop_network();
     (void)mybot_provisioning_stop();
     if (runtime->button_initialized) {
@@ -493,6 +500,10 @@ int mybot_controller_start(void) {
     if (s_controller_thread) {
         MYBOT_LOGI(TAG, "application controller already started");
         return 0;
+    }
+    if (mybot_get_state() != MYBOT_STATE_STOPPED) {
+        MYBOT_LOGE(TAG, "cannot start controller until SDK shutdown completes");
+        return -1;
     }
     MYBOT_LOGI(TAG, "starting application controller");
 
