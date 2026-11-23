@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 #include "mybot_audio_capture_bk725x.h"
+#include "mybot_audio_internal_bk725x.h"
 
 #include <components/bk_audio/audio_pipeline/audio_element.h>
 #include <components/bk_audio/audio_pipeline/audio_pipeline.h>
@@ -39,32 +40,40 @@ typedef struct {
 } bk725x_capture_ctx_t;
 
 static int stop_pipeline(bk725x_capture_ctx_t *capture) {
-    int result = 0;
-
     if (!capture || !capture->started) {
         return 0;
     }
 
     if (audio_pipeline_stop(capture->pipeline) != BK_OK) {
         MYBOT_LOGE(TAG, "failed to stop capture pipeline");
-        result = -1;
+        return -1;
+    }
+    /* The pipeline wait resets its state. Confirm both elements stopped first
+     * so a timeout leaves the pipeline available for a shutdown retry. */
+    const TickType_t timeout = BK_MS_TO_TICKS(MYBOT_AUDIO_STOP_TIMEOUT_MS);
+    if (audio_element_wait_for_stop_ms(capture->mic, timeout) != BK_OK ||
+        audio_element_wait_for_stop_ms(capture->raw_reader, timeout) != BK_OK) {
+        MYBOT_LOGE(TAG, "capture elements did not stop before timeout");
+        return -1;
     }
     if (audio_pipeline_wait_for_stop(capture->pipeline) != BK_OK) {
         MYBOT_LOGE(TAG, "failed to wait for capture pipeline");
-        result = -1;
+        return -1;
     }
 
     capture->started = false;
-    MYBOT_LOGI(TAG, "stop complete, result=%d", result);
-    return result;
+    MYBOT_LOGI(TAG, "stop complete");
+    return 0;
 }
 
-static void release_capture(bk725x_capture_ctx_t *capture) {
+static bool release_capture(bk725x_capture_ctx_t *capture) {
     if (!capture) {
-        return;
+        return true;
     }
 
-    (void)stop_pipeline(capture);
+    if (stop_pipeline(capture) < 0) {
+        return false;
+    }
 
     if (capture->pipeline) {
         audio_pipeline_deinit(capture->pipeline);
@@ -79,6 +88,7 @@ static void release_capture(bk725x_capture_ctx_t *capture) {
     }
 
     psram_free(capture);
+    return true;
 }
 
 int mybot_audio_bk725x_capture_init(void **ctx, int rate, int channels, int bits) {
@@ -241,6 +251,7 @@ int mybot_audio_bk725x_capture_stop(void *ctx) {
 
 void mybot_audio_bk725x_capture_destroy(void *ctx) {
     MYBOT_LOGI(TAG, "destroy requested");
-    release_capture(ctx);
-    MYBOT_LOGI(TAG, "destroy complete");
+    if (release_capture(ctx)) {
+        MYBOT_LOGI(TAG, "destroy complete");
+    }
 }
