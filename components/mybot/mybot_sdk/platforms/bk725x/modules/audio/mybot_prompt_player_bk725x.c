@@ -118,8 +118,8 @@ static int play_pcm(const int16_t *pcm, int frames) {
     }
 
 cleanup:
-    if (playback_started) {
-        (void)mybot_audio_bk725x_playback_stop(playback_ctx);
+    if (playback_started && mybot_audio_bk725x_playback_stop(playback_ctx) < 0) {
+        result = -1;
     }
     mybot_audio_bk725x_playback_destroy(playback_ctx);
     return result;
